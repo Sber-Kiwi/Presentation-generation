@@ -19,7 +19,7 @@ CREATE TABLE "Metrica" (
 CREATE TABLE "Slide" (
     slideID     SERIAL NOT NULL PRIMARY KEY,
     chatID      INT REFERENCES "Chat"(chatID) ON DELETE CASCADE,
-    metricaID   INT REFERENCES "Metrica"(metricaIF) ON DELETE CASCADE,
+    metricaID   INT REFERENCES "Metrica"(metricaID) ON DELETE CASCADE,
     num         SMALLINT NOT NULL CHECK (num > 0),
     comment     VARCHAR(250) NULL
 );
