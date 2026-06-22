@@ -1,0 +1,291 @@
+/* ===========================================================
+   ТЕМА: «СБЕР»
+   =========================================================== */
+
+:root {
+    --sber-green: #21A038;
+    --sber-green-dark: #168331;
+    --sber-green-darker: #0F5C24;
+    --sber-green-light: #E7F7EA;
+    --sber-green-soft: #CDEED4;
+    --sber-bg: #F2F5F3;
+    --sber-white: #FFFFFF;
+    --sber-text: #1B1F1C;
+    --sber-text-muted: #6B7670;
+    --sber-border: #DCE6DF;
+    --sber-shadow: 0 4px 16px rgba(22, 73, 35, 0.08);
+    --sber-shadow-strong: 0 6px 20px rgba(22, 73, 35, 0.18);
+}
+
+/* ===========================================================
+   БАЗОВЫЙ СБРОС
+   =========================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Roboto, Arial, sans-serif;
+    height: 100vh;
+    display: flex;
+    background: var(--sber-bg);
+    color: var(--sber-text);
+}
+
+/* ===========================================================
+   ЛЕВАЯ КОЛОНКА: список чатов/проектов
+   =========================================================== */
+#chats {
+    width: 160px;
+    flex-shrink: 0;
+    background: var(--sber-white);
+    border-right: 1px solid var(--sber-border);
+    box-shadow: var(--sber-shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 0;
+}
+
+#new-chat {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: var(--sber-green);
+    color: var(--sber-white);
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: var(--sber-shadow-strong);
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+#new-chat:hover {
+    background: var(--sber-green-dark);
+}
+
+#new-chat:active {
+    transform: scale(0.96);
+}
+
+.chat,
+.version {
+    width: 128px;
+    padding: 10px 8px;
+    border: 1px solid var(--sber-border);
+    background: var(--sber-white);
+    color: var(--sber-text);
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.chat:hover,
+.version:hover {
+    background: var(--sber-green-light);
+    border-color: var(--sber-green-soft);
+}
+
+.chat:active,
+.version:active {
+    background: var(--sber-green-soft);
+    border-color: var(--sber-green);
+    color: var(--sber-green-darker);
+}
+
+/* ===========================================================
+   ОСНОВНАЯ ОБЛАСТЬ
+   =========================================================== */
+#main {
+    flex: 1;
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+}
+
+/* ===========================================================
+   ЗОНА СЛАЙДА СО СТРЕЛКАМИ
+   =========================================================== */
+#slide-switcher {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#move-to-left,
+#move-to-right {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    background: var(--sber-white);
+    box-shadow: var(--sber-shadow);
+    opacity: 0.9;
+    transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+#move-to-left:hover,
+#move-to-right:hover {
+    background: var(--sber-green-light);
+    opacity: 1;
+}
+
+#move-to-left {
+    transform: rotate(180deg);
+}
+
+/* ===========================================================
+   КАРТОЧКА СЛАЙДА
+   =========================================================== */
+#slide {
+    flex: 1;
+    height: 100%;
+    background: var(--sber-white);
+    border: 1px solid var(--sber-border);
+    border-radius: 20px;
+    box-shadow: var(--sber-shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    background: var(--sber-green-light);
+    border-bottom: 1px solid var(--sber-green-soft);
+    color: var(--sber-green-darker);
+    font-weight: 600;
+}
+
+#header > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#include-slide-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--sber-green);
+    cursor: pointer;
+}
+
+#draft {
+    flex: 1;
+    margin: 20px;
+    background: var(--sber-bg);
+    border: 2px dashed var(--sber-green-soft);
+    border-radius: 14px;
+}
+
+#edits {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--sber-border);
+    background: var(--sber-white);
+}
+
+#comment {
+    flex: 1;
+    resize: none;
+    height: 40px;
+    padding: 10px 16px;
+    border: 1.5px solid var(--sber-border);
+    border-radius: 20px;
+    background: var(--sber-bg);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--sber-text);
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+#comment:focus {
+    outline: none;
+    border-color: var(--sber-green);
+    background: var(--sber-white);
+}
+
+#comment::placeholder {
+    color: var(--sber-text-muted);
+}
+
+#send-edit {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    padding: 9px;
+    border-radius: 50%;
+    background: var(--sber-green);
+    cursor: pointer;
+    box-shadow: var(--sber-shadow);
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+#send-edit:hover {
+    background: var(--sber-green-dark);
+}
+
+#send-edit:active {
+    transform: scale(0.94);
+}
+
+/* ===========================================================
+   ПРАВАЯ КОЛОНКА: версии и кнопка сохранения
+   =========================================================== */
+#versions-and-save {
+    width: 170px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#versions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 0;
+    background: var(--sber-white);
+    border: 1px solid var(--sber-border);
+    border-radius: 16px;
+    box-shadow: var(--sber-shadow);
+}
+
+#save {
+    margin-top: 18px;
+    padding: 14px 8px;
+    border: none;
+    border-radius: 16px;
+    background: var(--sber-green);
+    color: var(--sber-white);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    box-shadow: var(--sber-shadow-strong);
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+#save:hover {
+    background: var(--sber-green-dark);
+}
+
+#save:active {
+    transform: scale(0.98);
+}

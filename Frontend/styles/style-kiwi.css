@@ -1,0 +1,284 @@
+/* ===========================================================
+   ТЕМА: «КИВИ»
+   =========================================================== */
+
+:root {
+    --kiwi-skin: #6B4226;       
+    --kiwi-flesh: #8BC34A;       
+    --kiwi-flesh-dark: #5C8B2C;
+    --kiwi-flesh-light: #DCEFC0;
+    --kiwi-cream: #FBF6E9;       
+    --kiwi-cream-dim: #F3ECD8;
+    --kiwi-seed: #2E2014;        
+    --kiwi-bg: #F6F1E4;
+    --kiwi-shadow: 0 4px 14px rgba(60, 40, 15, 0.14);
+}
+
+/* ===========================================================
+   БАЗОВЫЙ СБРОС
+   =========================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Roboto, Arial, sans-serif;
+    height: 100vh;
+    display: flex;
+    background: var(--kiwi-bg);
+    color: var(--kiwi-seed);
+}
+
+/* ===========================================================
+   ЛЕВАЯ КОЛОНКА
+   =========================================================== */
+#chats {
+    width: 160px;
+    flex-shrink: 0;
+    background: var(--kiwi-skin);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 0;
+}
+
+#new-chat {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: var(--kiwi-flesh);
+    color: var(--kiwi-cream);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: var(--kiwi-shadow);
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+#new-chat:hover {
+    background: var(--kiwi-flesh-dark);
+}
+
+#new-chat:active {
+    transform: scale(0.96);
+}
+
+.chat,
+.version {
+    width: 128px;
+    padding: 10px 8px;
+    border: none;
+    background: var(--kiwi-flesh);
+    color: var(--kiwi-seed);
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.chat:hover,
+.version:hover {
+    background: var(--kiwi-flesh-light);
+}
+
+.chat:active,
+.version:active {
+    background: var(--kiwi-flesh-dark);
+    color: var(--kiwi-cream);
+}
+
+/* ===========================================================
+   ОСНОВНАЯ ОБЛАСТЬ
+   =========================================================== */
+#main {
+    flex: 1;
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+}
+
+/* ===========================================================
+   ЗОНА СЛАЙДА СО СТРЕЛКАМИ
+   =========================================================== */
+#slide-switcher {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#move-to-left,
+#move-to-right {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    background: var(--kiwi-cream);
+    box-shadow: var(--kiwi-shadow);
+    transition: background 0.15s ease, opacity 0.15s ease;
+    opacity: 0.85;
+}
+
+#move-to-left:hover,
+#move-to-right:hover {
+    opacity: 1;
+    background: var(--kiwi-flesh-light);
+}
+
+#move-to-left {
+    transform: rotate(180deg);
+}
+
+/* ===========================================================
+   КАРТОЧКА СЛАЙДА
+   =========================================================== */
+#slide {
+    flex: 1;
+    height: 100%;
+    background: var(--kiwi-cream);
+    border: 2px solid var(--kiwi-skin);
+    border-radius: 20px;
+    box-shadow: var(--kiwi-shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    background: var(--kiwi-skin);
+    color: var(--kiwi-cream);
+    font-weight: 600;
+}
+
+#header > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#include-slide-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--kiwi-flesh);
+    cursor: pointer;
+}
+
+#draft {
+    flex: 1;
+    margin: 20px;
+    background: var(--kiwi-cream-dim);
+    border: 2px dashed var(--kiwi-skin);
+    border-radius: 14px;
+}
+
+#edits {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    background: var(--kiwi-cream);
+    border-top: 2px solid var(--kiwi-skin);
+}
+
+#comment {
+    flex: 1;
+    resize: none;
+    height: 40px;
+    padding: 10px 16px;
+    border: 2px solid var(--kiwi-cream-dim);
+    border-radius: 20px;
+    background: var(--kiwi-cream-dim);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--kiwi-seed);
+    transition: border-color 0.15s ease;
+}
+
+#comment:focus {
+    outline: none;
+    border-color: var(--kiwi-flesh);
+}
+
+#comment::placeholder {
+    color: var(--kiwi-skin);
+    opacity: 0.7;
+}
+
+#send-edit {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    padding: 9px;
+    border-radius: 50%;
+    background: var(--kiwi-flesh);
+    cursor: pointer;
+    box-shadow: var(--kiwi-shadow);
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+#send-edit:hover {
+    background: var(--kiwi-flesh-dark);
+}
+
+#send-edit:active {
+    transform: scale(0.94);
+}
+
+/* ===========================================================
+   ПРАВАЯ КОЛОНКА: версии и кнопка сохранения
+   =========================================================== */
+#versions-and-save {
+    width: 170px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#versions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 0;
+    background: var(--kiwi-cream);
+    border: 2px solid var(--kiwi-skin);
+    border-radius: 16px;
+    box-shadow: var(--kiwi-shadow);
+}
+
+#save {
+    margin-top: 18px;
+    padding: 14px 8px;
+    border: none;
+    border-radius: 16px;
+    background: var(--kiwi-flesh);
+    color: var(--kiwi-seed);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    box-shadow: var(--kiwi-shadow);
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+#save:hover {
+    background: var(--kiwi-flesh-dark);
+    color: var(--kiwi-cream);
+}
+
+#save:active {
+    transform: scale(0.98);
+}
