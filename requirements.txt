@@ -1,0 +1,13 @@
+langgraph
+langchain
+ipython
+langchain_openai
+langchain_community
+dotenv
+typing
+pandas
+
+# Experimental for working with pandas DataFrames (should replace with sql tool 
+# with only select permissions)
+langchain_experimental
+tabulate
