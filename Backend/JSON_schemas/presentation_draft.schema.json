@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/presentation_draft_slide.schema.json",
+  "title": "PresentationDraftSlide",
+  "description": "Описание одного слайда-черновика. Нейронка 2 генерирует объекты по этой схеме. Слайды одного показателя (indicator) Resolver затем объединяет в финальный JSON по порядку. Только ссылки на источник через data_binding.",
+  "type": "object",
+  "required": ["meta", "objects"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["slide_id", "indicator", "title"],
+      "properties": {
+        "slide_id": {
+          "type": "string",
+          "description": "Уникальный ID слайда. Генерировать как 'sld_' + 12 hex-символов"
+        },
+        "indicator": {
+          "type": "string",
+          "description": "Имя показателя по которому строятся слайды. По нему Resolver группирует и сортирует слайды одной метрики перед сборкой финала"
+        },
+        "title": {
+          "type": "string",
+          "description": "Заголовок слайда. Всегда отображается в шапке - отдельная зона над сеткой, не входит в ячейки"
+        },
+        "notes": {
+          "type": ["string", "null"],
+          "default": null
+        }
+      }
+    },
+    "objects": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Объекты на слайде. Каждый занимает одну или более ячеек фиксированной сетки 3x3. Resolver сам вычислит финальные размеры и позиции исходя из занятых и свободных ячеек.",
+      "items": { "$ref": "#/$defs/DraftObject" }
+    }
+  },
+
+  "$defs": {
+    "DraftObject": {
+      "type": "object",
+      "required": ["object_id", "type", "cell"],
+      "description": "Один объект на слайде. Нейронка указывает только тип, начальную ячейку и откуда брать данные - финальные размеры считает Resolver.",
+      "properties": {
+        "object_id": {
+          "type": "string",
+          "description": "Уникальный ID объекта. Генерировать как 'obj_' + 12 hex-символов"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["TEXT", "TABLE", "CHART"]
+        },
+        "cell": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 8,
+          "description": "Стартовая ячейка объекта в фиксированной сетке 3x3. Нумерация:\n  0 | 1 | 2\n  3 | 4 | 5\n  6 | 7 | 8\nЕсли объект единственный на слайде - Resolver растягивает его на весь контентный блок. Resolver автоматически заполняет все смежные свободные ячейки согласно span_hint."
+        },
+        "span_hint": {
+          "type": "string",
+          "enum": ["auto", "single", "horizontal", "vertical", "full"],
+          "default": "auto",
+          "description": "Подсказка Resolver'у о приоритете расширения объекта на свободные ячейки:\n  auto - алгоритм решает сам (по умолчанию)\n single - поле должно остаться в блоке\n  horizontal - расширяться в первую очередь по строке (типично для LINE/BAR графиков)\n  vertical - расширяться по столбцу (типично для текстовых колонок-комментариев)\n  full - занять всё доступное пространство независимо от формы"
+        },
+        "span_hint_wide": {
+          "type": "boolean",
+          "default": true,
+          "description": "Поле, которое определяет может ли блок быть расширен до максимально возможного размера, если false - то только на 1 ячейку вправо/вниз."
+        },
+        "text": {
+          "type": "string",
+          "description": "Только для type=TEXT. Аналитический комментарий или описание, генерируемый нейронкой. Поддерживает markdown."
+        },
+        "markdown": {
+          "type": "boolean",
+          "default": true
+        },
+        "data_binding": {
+          "description": "Только для type=TABLE или CHART. Семантическое описание того, какие данные нужно извлечь из исходной CSV. Реальные числа Resolver подставит при конвертации в Final JSON.",
+          "$ref": "#/$defs/DataBinding"
+        }
+      },
+      "if":   { "properties": { "type": { "const": "TEXT" } } },
+      "then": { "required": ["text"] },
+      "else": { "required": ["data_binding"] }
+    },
+
+    "DataBinding": {
+      "type": "object",
+      "required": ["chart_type"],
+      "description": "Описание запроса к данным. Resolver исполняет его как запрос к pandas DataFrame и строит нужный data-блок (TextData/TableData/ChartData/WaterfallData).",
+      "properties": {
+        "chart_type": {
+          "type": "string",
+          "enum": ["LINE", "BAR", "PIE", "WATERFALL", "TABLE"],
+          "description": "Определяет тип визуализации и соответствующий data-блок в Final JSON: TABLE → TableData, WATERFALL → WaterfallData, LINE/BAR/PIE → ChartData с соответствующим chart_type"
+        },
+        "source_columns": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Колонки CSV, которые нужны для построения (например ['Отчетный период', 'Значение', 'Показатель']). Если пусто - Resolver берёт все колонки."
+        },
+        "filters": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Фильтры по строкам. Ключ - имя колонки, значение - одно значение или массив. Например: {\"Федеральный округ РФ\": \"Северо-Западный ФО\", \"Показатель\": \"Доход банка\"}"
+        },
+        "group_by": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Колонки для группировки (например ['Отчетный период'] для временного ряда)"
+        },
+        "aggregation": {
+          "type": "string",
+          "enum": ["sum", "mean", "last", "none"],
+          "description": "Агрегация значений внутри группы. none - без агрегации (берём строки как есть)"
+        },
+        "top_n": {
+          "type": ["integer", "null"],
+          "description": "Ограничить вывод топ-N строками по значению. null - без ограничений. Актуально для TABLE и WATERFALL с большим числом статей."
+        }
+      }
+    }
+  }
+}
