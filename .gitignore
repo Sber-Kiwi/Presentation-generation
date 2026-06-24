@@ -1,0 +1,7 @@
+# Ignore env file
+.env
+
+# Jupiter Notebooks
+Notebook
+
+__pycache__
