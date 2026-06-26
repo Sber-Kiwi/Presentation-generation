@@ -31,7 +31,7 @@
     "objects": {
       "type": "array",
       "minItems": 1,
-      "description": "Объекты на слайде. Каждый занимает одну или более ячеек фиксированной сетки 3x3. Resolver сам вычислит финальные размеры и позиции исходя из занятых и свободных ячеек.",
+      "description": "Объекты на слайде. Каждый занимает одну или более ячеек фиксированной сетки 4x3. Resolver сам вычислит финальные размеры и позиции исходя из занятых и свободных ячеек.",
       "items": { "$ref": "#/$defs/DraftObject" }
     }
   },
@@ -39,7 +39,7 @@
   "$defs": {
     "DraftObject": {
       "type": "object",
-      "required": ["object_id", "type", "cell"],
+      "required": ["object_id", "type", "cell_pos", "span"],
       "description": "Один объект на слайде. Нейронка указывает только тип, начальную ячейку и откуда брать данные - финальные размеры считает Resolver.",
       "properties": {
         "object_id": {
@@ -50,33 +50,51 @@
           "type": "string",
           "enum": ["TEXT", "TABLE", "CHART"]
         },
-        "cell": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 8,
-          "description": "Стартовая ячейка объекта в фиксированной сетке 3x3. Нумерация:\n  0 | 1 | 2\n  3 | 4 | 5\n  6 | 7 | 8\nЕсли объект единственный на слайде - Resolver растягивает его на весь контентный блок. Resolver автоматически заполняет все смежные свободные ячейки согласно span_hint."
+        "cell_pos": {
+          "type": "object",
+          "description": "Стартовая позиция объекта в фиксированной сетке 4x3 (4 колонки, 3 строки).",
+          "properties": {
+            "x": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3,
+              "description": "Колонка старта (0 - крайняя левая, 3 - крайняя правая)."
+            },
+            "y": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2,
+              "description": "Строка старта (0 - верхняя, 2 - нижняя)."
+            }
+          },
+          "required": ["x", "y"]
         },
-        "span_hint": {
-          "type": "string",
-          "enum": ["auto", "single", "horizontal", "vertical", "full"],
-          "default": "auto",
-          "description": "Подсказка Resolver'у о приоритете расширения объекта на свободные ячейки:\n  auto - алгоритм решает сам (по умолчанию)\n single - поле должно остаться в блоке\n  horizontal - расширяться в первую очередь по строке (типично для LINE/BAR графиков)\n  vertical - расширяться по столбцу (типично для текстовых колонок-комментариев)\n  full - занять всё доступное пространство независимо от формы"
-        },
-        "span_hint_wide": {
-          "type": "boolean",
-          "default": true,
-          "description": "Поле, которое определяет может ли блок быть расширен до максимально возможного размера, если false - то только на 1 ячейку вправо/вниз."
+        "span": {
+          "type": "object",
+          "description": "Размер объекта в ячейках сетки, считая от cell_pos.",
+          "properties": {
+            "x": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4,
+              "default": 1,
+              "description": "Сколько колонок занимает объект (1 = одна ячейка по горизонтали)."
+            },
+            "y": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3,
+              "default": 1,
+              "description": "Сколько строк занимает объект (1 = одна ячейка по вертикали)."
+            }
+          }
         },
         "text": {
           "type": "string",
           "description": "Только для type=TEXT. Аналитический комментарий или описание, генерируемый нейронкой. Поддерживает markdown."
         },
-        "markdown": {
-          "type": "boolean",
-          "default": true
-        },
         "data_binding": {
-          "description": "Только для type=TABLE или CHART. Семантическое описание того, какие данные нужно извлечь из исходной CSV. Реальные числа Resolver подставит при конвертации в Final JSON.",
+          "description": "Только для type=TABLE или CHART. Семантическое описание того, какие данные нужно извлечь из исходной CSV. Реальные числа подставятся при конвертации в Final JSON (нейронкой или Resolver'ом).",
           "$ref": "#/$defs/DataBinding"
         }
       },
@@ -95,29 +113,13 @@
           "enum": ["LINE", "BAR", "PIE", "WATERFALL", "TABLE"],
           "description": "Определяет тип визуализации и соответствующий data-блок в Final JSON: TABLE → TableData, WATERFALL → WaterfallData, LINE/BAR/PIE → ChartData с соответствующим chart_type"
         },
-        "source_columns": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "Колонки CSV, которые нужны для построения (например ['Отчетный период', 'Значение', 'Показатель']). Если пусто - Resolver берёт все колонки."
-        },
-        "filters": {
-          "type": "object",
-          "additionalProperties": true,
-          "description": "Фильтры по строкам. Ключ - имя колонки, значение - одно значение или массив. Например: {\"Федеральный округ РФ\": \"Северо-Западный ФО\", \"Показатель\": \"Доход банка\"}"
-        },
-        "group_by": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "Колонки для группировки (например ['Отчетный период'] для временного ряда)"
-        },
-        "aggregation": {
+        "title": {
           "type": "string",
-          "enum": ["sum", "mean", "last", "none"],
-          "description": "Агрегация значений внутри группы. none - без агрегации (берём строки как есть)"
+          "description": "Название DATA-объекта слайда (таблица/график)."
         },
-        "top_n": {
-          "type": ["integer", "null"],
-          "description": "Ограничить вывод топ-N строками по значению. null - без ограничений. Актуально для TABLE и WATERFALL с большим числом статей."
+        "data_description": {
+          "type": "string",
+          "description": "Описание объекта и данных, которые в нем записаны, с указанием параметров и названием столбцов/параметров."
         }
       }
     }
