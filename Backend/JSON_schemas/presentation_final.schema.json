@@ -1,0 +1,175 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/presentation_final.schema.json",
+  "title": "PresentationFinal",
+  "description": "Финальный JSON для генерации pptx. Содержит всю презентацию со всеми слайдами. Блок data (TextData/TableData/ChartData/WaterfallData) переносится из исходных данных без изменений.",
+  "type": "object",
+  "required": ["meta", "slides"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["title"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Имя файла или заголовок всей презентации"
+        },
+        "common_slide_title": {
+          "type": "string",
+          "description": "Общий надзаголовок, отображаемый на всех слайдах (например, название банка/подразделения)"
+        }
+      }
+    },
+    "slides": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/Slide" }
+    }
+  },
+
+  "$defs": {
+    "Slide": {
+      "type": "object",
+      "required": ["meta", "objects"],
+      "properties": {
+        "meta": {
+          "type": "object",
+          "required": ["slide_id", "title", "number", "indicator"],
+          "properties": {
+            "slide_id": {
+              "type": "string",
+              "description": "Сохраняется из черновика"
+            },
+            "title": {
+              "type": "string",
+              "description": "Заголовок слайда"
+            },
+            "number": {
+              "type": "integer",
+              "description": "Порядковый номер слайда в финальной презентации, проставляется Resolver'ом"
+            },
+            "indicator": {
+              "type": "string",
+              "description": "Сохраняется из черновика. Генератором pptx не используется."
+            },
+            "notes": {
+              "type": ["string", "null"],
+              "default": null
+            }
+          }
+        },
+        "objects": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/FinalObject" }
+        }
+      }
+    },
+
+    "FinalObject": {
+      "type": "object",
+      "required": ["object_id", "type", "position", "data"],
+      "description": "Объект на слайде с явной абсолютной позицией, вычисленной Resolver'ом.",
+      "properties": {
+        "object_id": {
+          "type": "string",
+          "description": "Сохраняется из черновика"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["TEXT", "TABLE", "CHART"]
+        },
+        "position": {
+          "x":      { "type": "number", "description": "Отступ от левого края слайда, дюймы" },
+          "y":      { "type": "number", "description": "Отступ от верхнего края слайда (ниже заголовка), дюймы" },
+          "width":  { "type": "number", "description": "Ширина объекта, дюймы" },
+          "height": { "type": "number", "description": "Высота объекта, дюймы" }
+        },
+        "data": {
+          "oneOf": [
+            { "$ref": "#/$defs/TextData" },
+            { "$ref": "#/$defs/TableData" },
+            { "$ref": "#/$defs/ChartData" },
+            { "$ref": "#/$defs/WaterfallData" }
+          ]
+        }
+      }
+    },
+
+    "TextData": {
+      "type": "object",
+      "required": ["kind", "text"],
+      "properties": {
+        "kind":     { "const": "TextData" },
+        "text":     { "type": "string" },
+        "markdown": { "type": "boolean", "default": true }
+      }
+    },
+
+    "TableData": {
+      "type": "object",
+      "required": ["kind", "headers", "rows", "caption"],
+      "properties": {
+        "kind":    { "const": "TableData" },
+        "headers": { "type": "array", "items": { "type": "string" } },
+        "rows":    { "type": "array", "items": { "type": "array" } },
+        "caption": { "type": ["string", "null"] }
+      }
+    },
+
+    "ChartData": {
+      "type": "object",
+      "required": ["kind", "title", "chart_type", "label", "series"],
+      "properties": {
+        "kind":       { "const": "ChartData" },
+        "title":      { "type": "string" },
+        "chart_type": { "type": "string", "enum": ["LINE", "BAR", "PIE"] },
+        "label":      { "type": ["string", "null"] },
+        "series": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["data", "unit", "color"],
+            "properties": {
+              "unit":  { "type": "string" },
+              "color": { "type": "string" },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["x", "y"],
+                  "properties": {
+                    "x": { "type": "string" },
+                    "y": { "type": "number" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "WaterfallData": {
+      "type": "object",
+      "required": ["kind", "data"],
+      "properties": {
+        "kind": { "const": "WaterfallData" },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "plan", "delta", "type", "text"],
+            "properties": {
+              "name":  { "type": "string" },
+              "plan":  { "type": "number" },
+              "delta": { "type": "number" },
+              "type":  { "type": "string", "enum": ["START", "COMMON", "END"] },
+              "text":  { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

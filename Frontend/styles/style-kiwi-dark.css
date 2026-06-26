@@ -3,15 +3,15 @@
    =========================================================== */
 
 :root {
-    --bg: #10140A;           
-    --surface: #1A2012;      
-    --surface-alt: #212918;  
-    --border: #343F28;       
-    --flesh: #8BC34A;        
-    --flesh-dark: #71A83C;    
-    --on-flesh: #14200A;     
-    --text: #E7E6D6;          
-    --text-muted: #8E9579;    
+    --bg: #10140A;
+    --surface: #1A2012;
+    --surface-alt: #212918;
+    --border: #343F28;
+    --flesh: #8BC34A;
+    --flesh-dark: #71A83C;
+    --on-flesh: #14200A;
+    --text: #E7E6D6;
+    --text-muted: #8E9579;
     --glow: 0 0 0 3px rgba(139, 195, 74, 0.22);
     --shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
 }
@@ -19,16 +19,8 @@
 /* ===========================================================
    БАЗОВЫЙ СБРОС
    =========================================================== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 body {
     font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Roboto, Arial, sans-serif;
-    height: 100vh;
-    display: flex;
     background: var(--bg);
     color: var(--text);
 }
@@ -37,20 +29,13 @@ body {
    ЛЕВАЯ КОЛОНКА: список чатов/проектов
    =========================================================== */
 #chats {
-    width: 160px;
-    flex-shrink: 0;
     background: var(--surface);
     border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     gap: 12px;
     padding: 20px 0;
 }
 
 #new-chat {
-    width: 44px;
-    height: 44px;
     border: none;
     border-radius: 50%;
     background: var(--flesh);
@@ -58,7 +43,6 @@ body {
     font-size: 22px;
     font-weight: 700;
     line-height: 1;
-    cursor: pointer;
     box-shadow: var(--shadow);
     transition: background 0.15s ease, transform 0.1s ease;
 }
@@ -73,15 +57,12 @@ body {
 
 .chat,
 .version {
-    width: 128px;
-    padding: 10px 8px;
     border: 1px solid var(--border);
     background: var(--surface-alt);
     color: var(--text-muted);
     border-radius: 12px;
     font-size: 14px;
     font-weight: 500;
-    cursor: pointer;
     transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
@@ -101,29 +82,12 @@ body {
 /* ===========================================================
    ОСНОВНАЯ ОБЛАСТЬ
    =========================================================== */
-#main {
-    flex: 1;
-    display: flex;
-    padding: 20px;
-    gap: 20px;
-}
 
 /* ===========================================================
    ЗОНА СЛАЙДА СО СТРЕЛКАМИ
    =========================================================== */
-#slide-switcher {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
 #move-to-left,
 #move-to-right {
-    width: 40px;
-    height: 40px;
-    flex-shrink: 0;
-    cursor: pointer;
     padding: 8px;
     border-radius: 50%;
     background: var(--flesh);
@@ -146,31 +110,17 @@ body {
    КАРТОЧКА СЛАЙДА
    =========================================================== */
 #slide {
-    flex: 1;
-    height: 100%;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 20px;
     box-shadow: var(--shadow);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
 }
 
 #header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding: 14px 20px;
     border-bottom: 1px solid var(--border);
     color: var(--text);
     font-weight: 600;
-}
-
-#header > div {
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 
 #include-slide-checkbox {
@@ -181,8 +131,6 @@ body {
 }
 
 #draft {
-    flex: 1;
-    margin: 20px;
     position: relative;
     background:
         radial-gradient(circle at center, rgba(139, 195, 74, 0.10) 0%, transparent 65%),
@@ -192,18 +140,10 @@ body {
 }
 
 #edits {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 20px;
     border-top: 1px solid var(--border);
 }
 
 #comment {
-    flex: 1;
-    resize: none;
-    height: 40px;
-    padding: 10px 16px;
     border: 1px solid var(--border);
     border-radius: 20px;
     background: var(--surface-alt);
@@ -224,13 +164,9 @@ body {
 }
 
 #send-edit {
-    width: 38px;
-    height: 38px;
-    flex-shrink: 0;
     padding: 9px;
     border-radius: 50%;
     background: var(--flesh);
-    cursor: pointer;
     box-shadow: var(--shadow);
     transition: box-shadow 0.15s ease, transform 0.1s ease;
 }
@@ -246,20 +182,7 @@ body {
 /* ===========================================================
    ПРАВАЯ КОЛОНКА: версии и кнопка сохранения
    =========================================================== */
-#versions-and-save {
-    width: 170px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
 #versions {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 18px 0;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 16px;
@@ -267,16 +190,12 @@ body {
 }
 
 #save {
-    margin-top: 18px;
-    padding: 14px 8px;
     border: none;
     border-radius: 16px;
     background: var(--flesh);
     color: var(--on-flesh);
     font-size: 14px;
     font-weight: 700;
-    cursor: pointer;
-    text-align: center;
     box-shadow: var(--shadow);
     transition: background 0.15s ease, transform 0.1s ease;
 }
@@ -287,4 +206,31 @@ body {
 
 #save:active {
     transform: scale(0.98);
+}
+
+/* ===========================================================
+   ГЛАВНЫЙ ЭКРАН (#start): приветствие + строка ввода
+   =========================================================== */
+#greeting {
+    color: var(--text);
+}
+
+#start #edits {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+#paperclip {
+    padding: 7px;
+    border-radius: 50%;
+    background: var(--surface-alt);
+    transition: box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+#paperclip:hover {
+    box-shadow: var(--glow);
+}
+
+#paperclip:active {
+    transform: scale(0.94);
 }
