@@ -1,0 +1,57 @@
+openapi: 3.1.0
+info:
+  title: Presentation generator
+  version: 1.0.0
+  description: AI agent tool that analyzes table of data and generates a presentation from it
+
+
+components:
+  
+  schemas:
+    
+    CsvFile:
+      type: string
+      format: binary
+
+    UserID:
+      type: integer
+
+    JsonDraftSlide:
+      $ref: "./../JSON_schemas/presentation_draft.schema.json"
+
+    # Frontend to backend for chat creating
+    StartQuery:
+      type: object
+      properties:
+        prompt: {type: string}
+        table:  {$ref: "#/components/schemas/CsvFile"}
+
+    # Backend to frontend send chat information
+    Chat:
+      type: object
+      properties:
+        id:         {type: string, example: "chat_123"}
+        title:      {type: string}
+        slides:
+          type: array
+          items:
+            $ref: "#/components/schemas/JsonDraftSlide"
+          example: []
+
+    # Frontend to backend for slide edit
+    EditQuery:
+      type: object
+      properties:
+        chatID:     {type: string, example: "chat_123"}
+        prompt:     {type: string}
+        slideID:    {type: string, example: "slide_777"}
+        versionID:  {type: string, example: "version_777"}
+    
+    # Backend to frontend after neural network changes :)
+    EditedSlide:
+      type: object
+      properties:
+        chatID: {type: string, example: "chat_123"}
+        slideID: {type: string, example: "slide_777"}
+        versionID: {type: string, example: "version_778"}
+        slide: {$ref: "#/components/schemas/JsonDraftSlide"}
