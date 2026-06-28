@@ -13,15 +13,20 @@ components:
       type: string
       format: binary
 
-    UserID:
-      type: integer
-
     JsonDraftSlide:
       $ref: "./../JSON_schemas/presentation_draft.schema.json"
+
+    SlideVersion:
+      type: object
+      properties:
+        versionID:  {type: string, example: "version_777"}
+        slide:      {$ref: "#/components/schemas/JsonDraftSlide"}
+        createdAt:  {type: string, format: date-time}
 
     # Frontend to backend for chat creating
     StartQuery:
       type: object
+      required: [prompt, table]
       properties:
         prompt: {type: string}
         table:  {$ref: "#/components/schemas/CsvFile"}
@@ -35,23 +40,388 @@ components:
         slides:
           type: array
           items:
-            $ref: "#/components/schemas/JsonDraftSlide"
-          example: []
+            type: object
+            properties:
+              slideID:  {type: string, example: "slide_777"}
+              order:    {type: integer, example: 1}
+              versions:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SlideVersion"
+              state:
+                $ref: "#/components/schemas/SlideState"
+
+    JobResponse:
+      type: object
+      properties:
+        chatID:
+          type: string
+          example: "chat_123"
+        slideID:
+          type: string
+          example: "slide_777"
+          nullable: true
+        status:
+          type: string
+          enum: [pending, processing, done, failed]
+          example: "pending"
+    
+    ChatStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, processing, done, failed]
+          example: "pending"
+        error:
+          type: string
+          nullable: true
+          example: null
 
     # Frontend to backend for slide edit
     EditQuery:
       type: object
+      required: [prompt, slideID, versionID]
       properties:
-        chatID:     {type: string, example: "chat_123"}
         prompt:     {type: string}
-        slideID:    {type: string, example: "slide_777"}
         versionID:  {type: string, example: "version_777"}
     
-    # Backend to frontend after neural network changes :)
-    EditedSlide:
+    SlideState:
       type: object
       properties:
-        chatID: {type: string, example: "chat_123"}
-        slideID: {type: string, example: "slide_777"}
-        versionID: {type: string, example: "version_778"}
-        slide: {$ref: "#/components/schemas/JsonDraftSlide"}
+        selectedVersionID:  {type: string, example: "version_777"}
+        inPresentation:     {type: boolean, example: true}
+        editField:          {type: string, nullable: true}
+
+    SlideStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [idle, pending, processing, done, failed]
+          example: "processing"
+        newVersionID:
+          type: string
+          nullable: true
+          description: If done then ID else null
+          example: "version_778"
+        error:
+          type: string
+          nullable: true
+          example: null
+
+    DownloadStatus:
+      type: object
+      properties:
+        chatID:
+          type: string
+          example: "chat_123"
+        status:
+          type: string
+          enum: [pending, processing, done, failed]
+          example: "pending"
+        error:
+          type: string
+          nullable: true
+          example: null
+
+    Error:
+      type: object
+      properties:
+        code:    { type: string, example: "VALIDATION_ERROR" }
+        message: { type: string, example: ".csv file required" }
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:   { type: string }
+              message: { type: string }
+
+
+# Endpoints
+paths:
+
+  /chat/start:
+    post:
+      tags: [Chat]
+      summary: Create a chat and start a slide generator
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/StartQuery"
+      responses:
+        '202':
+          description: Chat is created, generator is started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobResponse"
+        '422':
+          description: Incomplete data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  
+  /chat/{chatID}/status:
+    get:
+      tags: [Chat]
+      summary: Check slide generation status
+      parameters:
+        - name: chatID
+          in: path
+          required: true
+          schema: {type: string, example: "chat_123"}
+      responses:
+        '200':
+          description: Current generation status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatStatus"
+        '404':
+          description: Chat not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  
+  /chat/{chatID}:
+    get:
+      tags: [Chat]
+      summary: Page with slide drafts
+      parameters:
+        - name: chatID
+          in: path
+          required: true
+          schema: {type: string, example: "chat_123"}
+      responses:
+        '200':
+          description: Page with slides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Chat"
+        '404':
+          description: Chat not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  
+  /chat/{chatID}/slides/{slideID}/edit:
+    post:
+      tags: [Chat]
+      summary: Send prompt for slide editing
+      parameters:
+        - name: chatID
+          in: path
+          required: true
+          schema: {type: string, example: "chat_123"}
+        - name: slideID
+          in: path
+          required: true
+          schema: {type: string, example: "slide_777"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditQuery"
+      responses:
+        '202':
+          description: Request accepted, edit started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobResponse"
+        '404':
+          description: Chat not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /chat/{chatID}/download/start:
+    post:
+      tags: [Chat]
+      summary: Start presentation export
+      parameters:
+        - name: chatID
+          in: path
+          required: true
+          schema: {type: string, example: "chat_123"}
+      responses:
+        '202':
+          description: Export started
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/DownloadStatus"}
+        '404':
+          description: Chat not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /chat/{chatID}/download/status:
+    get:
+      tags: [Chat]
+      summary: Check export status
+      parameters:
+        - name: chatID
+          in: path
+          required: true
+          schema: {type: string, example: "chat_123"}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadStatus"
+        '404':
+          description: Chat not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /chat/{chatID}/download:
+    get:
+      tags: [Chat]
+      summary: Download ready presentation
+      parameters:
+        - name: chatID
+          in: path
+          required: true
+          schema: {type: string, example: "chat_123"}
+      responses:
+        '200':
+          description: PPTX file
+          content:
+            application/vnd.openxmlformats-officedocument.presentationml.presentation:
+              schema: {type: string, format: binary}
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                example: attachment; filename="presentation.pptx"
+        '409':
+          description: File is not ready yet
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Error"}
+        '404':
+          description: Chat not found
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Error"}
+
+  /chat/{chatID}/slides/{slideID}:
+    get:
+      tags: [Chat]
+      summary: Get slide and his current state
+      parameters:
+        - name: chatID
+          in: path
+          required: true
+          schema: {type: string, example: "chat_123"}
+        - name: slideID
+          in: path
+          required: true
+          schema: {type: string, example: "slide_777"}
+      responses:
+        '200':
+          description: Slide and his state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  slideID:  {type: string, example: "slide_777"}
+                  versions:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/SlideVersion"
+                  state:
+                    $ref: "#/components/schemas/SlideState"
+        '404':
+          description: Slide not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      
+    patch:
+      tags: [Chat]
+      summary: Update slide state
+      parameters:
+        - name: chatID
+          in: path
+          required: true
+          schema: {type: string, example: "chat_123"}
+        - name: slideID
+          in: path
+          required: true
+          schema: {type: string, example: "slide_777"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SlideState"
+            examples:
+              switchVersion:
+                summary: Switch version
+                value:
+                  selectedVersionID: "version_778"
+              excludeSlide:
+                summary: Exclude slide from final presentation
+                value:
+                  inPresentation: false
+              savePromptField:
+                summary: Save text in field before switch slide
+                value:
+                  editField: "Change chart color to blue"
+      responses:
+        '200':
+          description: State updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SlideState"
+        '404':
+          description: Slide not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /chat/{chatID}/slides/{slideID}/status:
+    get:
+      tags: [Chat]
+      summary: Slide editing status
+      parameters:
+        - name: chatID
+          in: path
+          required: true
+          schema: {type: string, example: "chat_123"}
+        - name: slideID
+          in: path
+          required: true
+          schema: {type: string, example: "slide_777"}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SlideStatus"
+        '404':
+          description: Slide not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
