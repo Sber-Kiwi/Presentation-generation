@@ -1,7 +1,10 @@
 CREATE DATABASE kiwidb;
 
 CREATE TABLE users (
-    userID      SERIAL NOT NULL PRIMARY KEY
+    userID      SERIAL NOT NULL PRIMARY KEY,
+    department  VARCHAR(40) NOT NULL,
+
+    CONSTRAINT chk_user_department CHECK (char_length(trim(department)) > 0)
 );
 
 CREATE TABLE csvs (
@@ -38,10 +41,8 @@ CREATE TABLE slides (
     chatID      INT REFERENCES chats(chatID) ON DELETE CASCADE,
     metricaID   INT REFERENCES metrics(metricID) ON DELETE CASCADE,
     num         SMALLINT NOT NULL CHECK (num > 0),
-    comment     VARCHAR(250) NULL,
-
-    CONSTRAINT uq_slide_num UNIQUE (chatID, num),
-    CONSTRAINT chk_slide_comment CHECK (comment IS NULL OR char_length(trim(comment)) > 0)
+    
+    CONSTRAINT uq_slide_num UNIQUE (chatID, num)
 );
 
 CREATE TABLE versions (

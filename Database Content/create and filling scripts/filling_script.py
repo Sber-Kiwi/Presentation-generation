@@ -26,8 +26,12 @@ def populate_database():
         clear_database(cur)
         
         user_ids = []
-        for _ in range(5):
-            cur.execute("INSERT INTO users DEFAULT VALUES RETURNING userID;")
+        for i in range(5):
+            departments = [
+                "Отдел продаж", "Отдел планирования", "Отдел приколов", "Отдел плоскогубцев",
+                "Отдел отделов"
+            ]
+            cur.execute("INSERT INTO users (department) VALUES (%s) RETURNING userID;", (departments[i],))
             user_ids.append(cur.fetchone()[0])
         
         csv_ids = []
@@ -70,12 +74,11 @@ def populate_database():
         for chat_id in chat_ids:
             for num in range(1, 7):
                 metric_id = random.choice(metric_ids)
-                comment = f"Заметка для слайда {num}" if num % 2 != 0 else None 
                 
                 cur.execute("""
-                    INSERT INTO slides (chatID, metricaID, num, comment) 
-                    VALUES (%s, %s, %s, %s) RETURNING slideID;
-                """, (chat_id, metric_id, num, comment))
+                    INSERT INTO slides (chatID, metricaID, num) 
+                    VALUES (%s, %s, %s) RETURNING slideID;
+                """, (chat_id, metric_id, num))
                 
                 slide_id = cur.fetchone()[0]
                 slides_data.append((slide_id, chat_id))
