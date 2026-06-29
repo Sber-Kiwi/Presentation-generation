@@ -81,7 +81,7 @@ components:
     # Frontend to backend for slide edit
     EditQuery:
       type: object
-      required: [prompt, slideID, versionID]
+      required: [prompt, versionID]
       properties:
         prompt:     {type: string}
         versionID:  {type: string, example: "version_777"}
@@ -91,7 +91,6 @@ components:
       properties:
         selectedVersionID:  {type: string, example: "version_777"}
         inPresentation:     {type: boolean, example: true}
-        editField:          {type: string, nullable: true}
 
     SlideStatus:
       type: object
@@ -245,6 +244,113 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+  /chat/{chatID}/slides/{slideID}/status:
+    get:
+      tags: [Chat]
+      summary: Slide editing status
+      parameters:
+        - name: chatID
+          in: path
+          required: true
+          schema: {type: string, example: "chat_123"}
+        - name: slideID
+          in: path
+          required: true
+          schema: {type: string, example: "slide_777"}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SlideStatus"
+        '404':
+          description: Slide not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /chat/{chatID}/slides/{slideID}:
+    get:
+      tags: [Chat]
+      summary: Get edited slide
+      parameters:
+        - name: chatID
+          in: path
+          required: true
+          schema: {type: string, example: "chat_123"}
+        - name: slideID
+          in: path
+          required: true
+          schema: {type: string, example: "slide_777"}
+      responses:
+        '200':
+          description: Edited slide
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  slideID:  {type: string, example: "slide_777"}
+                  $ref: "#/components/schemas/SlideVersion"
+        '404':
+          description: Slide not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /chat/{chatID}/slides/{slideID}/changes:
+    get:
+      tags: [Chat]
+      summary: Get edited slide and new slides
+      parameters:
+        - name: chatID
+          in: path
+          required: true
+          schema: {type: string, example: "chat_123"}
+        - name: slideID
+          in: path
+          required: true
+          schema: {type: string, example: "slide_777"}
+      responses:
+        '200':
+          description: Edited slide and new slides
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ editedSlide, newSlides, slidePositions ]
+                properties:
+                  editedSlide:
+                    $ref: "#/components/schemas/SlideVersion"
+                  newSlides:
+                    type: array
+                    description: New slides generated from the edited one
+                    items:
+                      type: object
+                      required: [slideID, version]
+                      properties:
+                        slideID:  {type: string, example: "slide_34"}
+                        version:    {$ref: "#/components/schemas/SlideVersion"}
+                  slidePositions:
+                    type: object
+                    description: Map of slideID to slide number in presentation
+                    additionalProperties:
+                      type: integer
+                    example:
+                      slide_1: 1
+                      slide_2: 2
+                      slide_777: 34
+                      slide_778: 35
+                      slide_779: 36
+        '404':
+          description: Slide not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /chat/{chatID}/download/start:
     post:
       tags: [Chat]
@@ -254,6 +360,29 @@ paths:
           in: path
           required: true
           schema: {type: string, example: "chat_123"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [slides]
+              properties:
+                slides:
+                  type: array
+                  description: List of slide states
+                  items:
+                    $ref: "#/components/schemas/SlideState"
+                editedSlides:
+                  type: array
+                  description: JSONs of slides changed via Drag-and-Drop
+                  items:
+                    type: object
+                    required: [slideID, version]
+                    properties:
+                      slideID: { type: string, example: "slide_34" }
+                      version: { $ref: "#/components/schemas/SlideVersion" }
+
       responses:
         '202':
           description: Export started
@@ -292,7 +421,7 @@ paths:
   /chat/{chatID}/download:
     get:
       tags: [Chat]
-      summary: Download ready presentation
+      summary: Download presentation bundle (PPTX + JSON)
       parameters:
         - name: chatID
           in: path
@@ -300,15 +429,15 @@ paths:
           schema: {type: string, example: "chat_123"}
       responses:
         '200':
-          description: PPTX file
+          description: ZIP archive with PPTX and JSON
           content:
-            application/vnd.openxmlformats-officedocument.presentationml.presentation:
+            application/zip:
               schema: {type: string, format: binary}
           headers:
             Content-Disposition:
               schema:
                 type: string
-                example: attachment; filename="presentation.pptx"
+                example: attachment; filename="presentation.zip"
         '409':
           description: File is not ready yet
           content:
@@ -320,108 +449,3 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/Error"}
 
-  /chat/{chatID}/slides/{slideID}:
-    get:
-      tags: [Chat]
-      summary: Get slide and his current state
-      parameters:
-        - name: chatID
-          in: path
-          required: true
-          schema: {type: string, example: "chat_123"}
-        - name: slideID
-          in: path
-          required: true
-          schema: {type: string, example: "slide_777"}
-      responses:
-        '200':
-          description: Slide and his state
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  slideID:  {type: string, example: "slide_777"}
-                  versions:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/SlideVersion"
-                  state:
-                    $ref: "#/components/schemas/SlideState"
-        '404':
-          description: Slide not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-      
-    patch:
-      tags: [Chat]
-      summary: Update slide state
-      parameters:
-        - name: chatID
-          in: path
-          required: true
-          schema: {type: string, example: "chat_123"}
-        - name: slideID
-          in: path
-          required: true
-          schema: {type: string, example: "slide_777"}
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SlideState"
-            examples:
-              switchVersion:
-                summary: Switch version
-                value:
-                  selectedVersionID: "version_778"
-              excludeSlide:
-                summary: Exclude slide from final presentation
-                value:
-                  inPresentation: false
-              savePromptField:
-                summary: Save text in field before switch slide
-                value:
-                  editField: "Change chart color to blue"
-      responses:
-        '200':
-          description: State updated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SlideState"
-        '404':
-          description: Slide not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /chat/{chatID}/slides/{slideID}/status:
-    get:
-      tags: [Chat]
-      summary: Slide editing status
-      parameters:
-        - name: chatID
-          in: path
-          required: true
-          schema: {type: string, example: "chat_123"}
-        - name: slideID
-          in: path
-          required: true
-          schema: {type: string, example: "slide_777"}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SlideStatus"
-        '404':
-          description: Slide not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
