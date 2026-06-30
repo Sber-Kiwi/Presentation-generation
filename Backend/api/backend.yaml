@@ -300,52 +300,34 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /chat/{chatID}/slides/{slideID}/changes:
-    get:
-      tags: [Chat]
-      summary: Get edited slide and new slides
+  /chat/{chatID}/slides/{slideID}/shift:
+    post:
+      tags: [ Chat ]
+      summary: Send JSON with changes made using Drag-and-Drop
       parameters:
         - name: chatID
           in: path
           required: true
-          schema: {type: string, example: "chat_123"}
+          schema: { type: string, example: "chat_123" }
         - name: slideID
           in: path
           required: true
-          schema: {type: string, example: "slide_777"}
+          schema: { type: string, example: "slide_777" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SlideVersion"
       responses:
-        '200':
-          description: Edited slide and new slides
+        '202':
+          description: Request accepted, version changed
           content:
             application/json:
               schema:
-                type: object
-                required: [ editedSlide, newSlides, slidePositions ]
-                properties:
-                  editedSlide:
-                    $ref: "#/components/schemas/SlideVersion"
-                  newSlides:
-                    type: array
-                    description: New slides generated from the edited one
-                    items:
-                      type: object
-                      required: [slideID, version]
-                      properties:
-                        slideID:  {type: string, example: "slide_34"}
-                        version:    {$ref: "#/components/schemas/SlideVersion"}
-                  slidePositions:
-                    type: object
-                    description: Map of slideID to slide number in presentation
-                    additionalProperties:
-                      type: integer
-                    example:
-                      slide_1: 1
-                      slide_2: 2
-                      slide_777: 34
-                      slide_778: 35
-                      slide_779: 36
+                $ref: "#/components/schemas/JobResponse"
         '404':
-          description: Slide not found
+          description: Chat not found
           content:
             application/json:
               schema:
