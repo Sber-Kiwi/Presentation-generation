@@ -5,13 +5,6 @@ JSON_SCHEMA_DRAFT = {
             "pandas DataFrame и строит нужный data-блок "
             "(TextData/TableData/ChartData/WaterfallData).",
             "properties": {
-                "aggregation": {
-                    "description": "Агрегация значений внутри "
-                    "группы. none — без агрегации "
-                    "(берём строки как есть)",
-                    "enum": ["sum", "mean", "last", "none"],
-                    "type": "string",
-                },
                 "chart_type": {
                     "description": "Определяет тип визуализации и "
                     "соответствующий data-блок в "
@@ -22,40 +15,17 @@ JSON_SCHEMA_DRAFT = {
                     "enum": ["LINE", "BAR", "PIE", "WATERFALL", "TABLE"],
                     "type": "string",
                 },
-                "filters": {
-                    "additionalProperties": True,
-                    "description": "Фильтры по строкам. Ключ — имя "
-                    "колонки, значение — одно значение "
-                    "или массив. Например: "
-                    '{"Федеральный округ РФ": '
-                    '"Северо-Западный ФО", '
-                    '"Показатель": "Доход банка"}',
-                    "type": "object",
+                "data_description": {
+                    "description": "Описание объекта и "
+                    "данных, которые в нем "
+                    "записаны, с указанием "
+                    "параметров и названием "
+                    "столбцов/параметров.",
+                    "type": "string",
                 },
-                "group_by": {
-                    "description": "Колонки для группировки "
-                    "(например ['Отчетный период'] "
-                    "для временного ряда)",
-                    "items": {"type": "string"},
-                    "type": "array",
-                },
-                "source_columns": {
-                    "description": "Колонки CSV, которые нужны "
-                    "для построения (например "
-                    "['Отчетный период', "
-                    "'Значение', "
-                    "'Показатель']). Если пусто "
-                    "— Resolver берёт все "
-                    "колонки.",
-                    "items": {"type": "string"},
-                    "type": "array",
-                },
-                "top_n": {
-                    "description": "Ограничить вывод топ-N строками по "
-                    "значению. null — без ограничений. "
-                    "Актуально для TABLE и WATERFALL с "
-                    "большим числом статей.",
-                    "type": ["integer", "null"],
+                "title": {
+                    "description": "Название DATA-объекта слайда " "(таблица/график).",
+                    "type": "string",
                 },
             },
             "required": ["chart_type"],
@@ -63,24 +33,30 @@ JSON_SCHEMA_DRAFT = {
         },
         "DraftObject": {
             "description": "Один объект на слайде. Нейронка указывает только тип, начальную "
-            "ячейку и откуда брать данные — финальные размеры считает Resolver.",
+            "ячейку и откуда брать данные - финальные размеры считает Resolver.",
             "else": {"required": ["data_binding"]},
             "if": {"properties": {"type": {"const": "TEXT"}}},
             "properties": {
-                "cell": {
-                    "description": "Стартовая ячейка объекта в "
-                    "фиксированной сетке 3x3. Нумерация:\n"
-                    "  0 | 1 | 2\n"
-                    "  3 | 4 | 5\n"
-                    "  6 | 7 | 8\n"
-                    "Если объект единственный на слайде — "
-                    "Resolver растягивает его на весь "
-                    "контентный блок. Resolver "
-                    "автоматически заполняет все смежные "
-                    "свободные ячейки согласно span_hint.",
-                    "maximum": 8,
-                    "minimum": 0,
-                    "type": "integer",
+                "cell_pos": {
+                    "description": "Стартовая позиция объекта в "
+                    "фиксированной сетке 4x3 (4 "
+                    "колонки, 3 строки).",
+                    "properties": {
+                        "x": {
+                            "description": "Колонка старта (0 - крайняя левая, 3 - крайняя правая).",
+                            "maximum": 3,
+                            "minimum": 0,
+                            "type": "integer",
+                        },
+                        "y": {
+                            "description": "Строка старта (0 - верхняя, 2 - нижняя).",
+                            "maximum": 2,
+                            "minimum": 0,
+                            "type": "integer",
+                        },
+                    },
+                    "required": ["x", "y"],
+                    "type": "object",
                 },
                 "data_binding": {
                     "$ref": "#/$defs/DataBinding",
@@ -88,36 +64,49 @@ JSON_SCHEMA_DRAFT = {
                     "CHART. Семантическое "
                     "описание того, какие данные "
                     "нужно извлечь из исходной "
-                    "CSV. Реальные числа Resolver "
-                    "подставит при конвертации в "
-                    "Final JSON.",
+                    "CSV. Реальные числа "
+                    "подставятся при конвертации "
+                    "в Final JSON (нейронкой или "
+                    "Resolver'ом).",
                 },
-                "markdown": {"default": True, "type": "boolean"},
                 "object_id": {
                     "description": "Уникальный ID объекта. "
                     "Генерировать как 'obj_' + 12 "
                     "hex-символов",
                     "type": "string",
                 },
-                "span_hint": {
-                    "default": "auto",
-                    "description": "Подсказка Resolver'у о "
-                    "приоритете расширения объекта "
-                    "на свободные ячейки:\n"
-                    "  auto — алгоритм решает сам "
-                    "(по умолчанию)\n"
-                    "  horizontal — расширяться в "
-                    "первую очередь по строке "
-                    "(типично для LINE/BAR "
-                    "графиков)\n"
-                    "  vertical — расширяться по "
-                    "столбцу (типично для текстовых "
-                    "колонок-комментариев)\n"
-                    "  full — занять всё доступное "
-                    "пространство независимо от "
-                    "формы",
-                    "enum": ["auto", "horizontal", "vertical", "full"],
-                    "type": "string",
+                "span": {
+                    "description": "Размер объекта в ячейках сетки, "
+                    "считая от cell_pos.",
+                    "properties": {
+                        "x": {
+                            "default": 1,
+                            "description": "Сколько "
+                            "колонок "
+                            "занимает "
+                            "объект (1 "
+                            "= одна "
+                            "ячейка по "
+                            "горизонтали).",
+                            "maximum": 4,
+                            "minimum": 1,
+                            "type": "integer",
+                        },
+                        "y": {
+                            "default": 1,
+                            "description": "Сколько "
+                            "строк "
+                            "занимает "
+                            "объект (1 "
+                            "= одна "
+                            "ячейка по "
+                            "вертикали).",
+                            "maximum": 3,
+                            "minimum": 1,
+                            "type": "integer",
+                        },
+                    },
+                    "type": "object",
                 },
                 "text": {
                     "description": "Только для type=TEXT. Аналитический "
@@ -128,16 +117,16 @@ JSON_SCHEMA_DRAFT = {
                 },
                 "type": {"enum": ["TEXT", "TABLE", "CHART"], "type": "string"},
             },
-            "required": ["object_id", "type", "cell"],
+            "required": ["object_id", "type", "cell_pos", "span"],
             "then": {"required": ["text"]},
             "type": "object",
         },
     },
     "$id": "https://example.com/schemas/presentation_draft_slide.schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "description": "Описание ОДНОГО слайда-черновика. Нейронка 2 генерирует по одному такому объекту за вызов. Слайды "
-    "одного показателя (indicator) Resolver затем объединяет в финальный JSON по порядку. Реальных "
-    "данных (чисел) нет — только ссылки на источник через data_binding.",
+    "description": "Описание одного слайда-черновика. Нейронка 2 генерирует объекты по этой схеме. Слайды одного "
+    "показателя (indicator) Resolver затем объединяет в финальный JSON по порядку. Только ссылки на "
+    "источник через data_binding.",
     "properties": {
         "meta": {
             "properties": {
@@ -157,7 +146,7 @@ JSON_SCHEMA_DRAFT = {
                 },
                 "title": {
                     "description": "Заголовок слайда. Всегда отображается "
-                    "в шапке — отдельная зона над сеткой, "
+                    "в шапке - отдельная зона над сеткой, "
                     "не входит в ячейки",
                     "type": "string",
                 },
@@ -167,7 +156,7 @@ JSON_SCHEMA_DRAFT = {
         },
         "objects": {
             "description": "Объекты на слайде. Каждый занимает одну или более ячеек "
-            "фиксированной сетки 3x3. Resolver сам вычислит финальные размеры "
+            "фиксированной сетки 4x3. Resolver сам вычислит финальные размеры "
             "и позиции исходя из занятых и свободных ячеек.",
             "items": {"$ref": "#/$defs/DraftObject"},
             "minItems": 1,
@@ -373,3 +362,16 @@ JSON_SCHEMA_FINAL = {
     "title": "PresentationFinal",
     "type": "object",
 }
+
+
+if __name__ == "__main__":
+    from jsf import JSF
+    from pprint import pformat
+
+    faker = JSF(JSON_SCHEMA_DRAFT)
+    example = faker.generate()
+
+    py_dict_string = pformat(example, indent=4, width=120)
+
+    with open("JSON_SHEMA_EXAMPLE.py", "w+", encoding="utf-8") as py_file:
+        py_file.write(f"JSON_SCHEMA = {py_dict_string}\n")
