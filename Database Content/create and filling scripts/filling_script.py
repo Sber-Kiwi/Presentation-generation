@@ -1,6 +1,7 @@
 import psycopg2
 import json
 import random
+from datetime import datetime, timedelta
 
 DB_CONFIG = {
     "dbname": "kiwidb",
@@ -48,7 +49,7 @@ def populate_database():
 
         metric_ids = []
         for name in ["Accuracy", "F1-Score", "Precision", "Recall"]:
-            cur.execute("INSERT INTO metrics (name) VALUES (%s) RETURNING metricaID;", (name,))
+            cur.execute("INSERT INTO metrics (name) VALUES (%s) RETURNING metricID;", (name,))
             metric_ids.append(cur.fetchone()[0])
       
         chat_ids = []
@@ -76,7 +77,7 @@ def populate_database():
                 metric_id = random.choice(metric_ids)
                 
                 cur.execute("""
-                    INSERT INTO slides (chatID, metricaID, num) 
+                    INSERT INTO slides (chatID, metricID, num) 
                     VALUES (%s, %s, %s) RETURNING slideID;
                 """, (chat_id, metric_id, num))
                 
@@ -84,16 +85,19 @@ def populate_database():
                 slides_data.append((slide_id, chat_id))
        
         versions_data = [] 
+        base_time = datetime.now()
         
         for slide_id, chat_id in slides_data:
             num_drafts = random.randint(3, 5)
             for v in range(num_drafts):
-                json_data = {"iteration": v + 1, "status": "draft", "changes": f"Правка {v+1}"}
+                json_data = {"iteration": v + 1, "status": "draft",
+                             "changes": f"Правка {v+1}"}
+                created = base_time + timedelta(minutes=v * 10)
                 cur.execute("""
-                    INSERT INTO versions (slideID, json, prompt, is_final) 
-                    VALUES (%s, %s, %s, %s) RETURNING versionID;
-                """, (slide_id, json.dumps(json_data), f"Что-то сделать", False))
-                
+                    INSERT INTO versions (slideID, json, prompt, created_at, is_final)
+                    VALUES (%s, %s, %s, %s, %s) RETURNING versionID;
+                """, (slide_id, json.dumps(json_data),
+                      f"Что-то сделать", created, False))
                 ver_id = cur.fetchone()[0]
                 versions_data.append((ver_id, chat_id))
                 
@@ -114,16 +118,17 @@ def populate_database():
             
         for chat_id in chat_ids:
             chat_versions = versions_by_chat[chat_id]
-            selected_versions = random.sample(chat_versions, 3)
             
-            for i, ver_id in enumerate(selected_versions):
-                status = i % 3 
-                task_type = random.randint(1, 3)
-                
-                cur.execute("""
-                    INSERT INTO tasks (chatID, versionID, type, prompt, status) 
-                    VALUES (%s, %s, %s, %s, %s);
-                """, (chat_id, ver_id, task_type, f"Обработать версию {ver_id} для чата {chat_id}", status))
+            # Выбираем ровно ОДНУ версию для создания единственной задачи
+            selected_version = random.choice(chat_versions) 
+            
+            status = random.randint(0, 2)
+            task_type = random.randint(1, 3)
+            
+            cur.execute("""
+                INSERT INTO tasks (chatID, versionID, type, prompt, status) 
+                VALUES (%s, %s, %s, %s, %s);
+            """, (chat_id, selected_version, task_type, f"Обработать версию {selected_version} для чата {chat_id}", status))
 
         conn.commit()
 

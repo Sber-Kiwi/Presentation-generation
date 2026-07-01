@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict akNtNtlZYaNH1pdiyqm7gCdS2wxo0vv4LSsfSVBc5U7xi2Em8Al2VhKnkRjex8e
+\restrict 1Y8hQumpGTi1g5dRSZ95svYNPItzO2dLYCKVXxJZMV5HCJS8OINFSdonbS8jkDJ
 
 -- Dumped from database version 18.4
 -- Dumped by pg_dump version 18.4
@@ -137,7 +137,7 @@ ALTER SEQUENCE public.jsons_jsonid_seq OWNED BY public.jsons.jsonid;
 --
 
 CREATE TABLE public.metrics (
-    metricaid integer NOT NULL,
+    metricid integer NOT NULL,
     name character varying(50),
     CONSTRAINT chk_metric_name CHECK ((char_length(TRIM(BOTH FROM name)) > 0))
 );
@@ -146,10 +146,10 @@ CREATE TABLE public.metrics (
 ALTER TABLE public.metrics OWNER TO postgres;
 
 --
--- Name: metrics_metricaid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: metrics_metricid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.metrics_metricaid_seq
+CREATE SEQUENCE public.metrics_metricid_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -158,13 +158,13 @@ CREATE SEQUENCE public.metrics_metricaid_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.metrics_metricaid_seq OWNER TO postgres;
+ALTER SEQUENCE public.metrics_metricid_seq OWNER TO postgres;
 
 --
--- Name: metrics_metricaid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: metrics_metricid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.metrics_metricaid_seq OWNED BY public.metrics.metricaid;
+ALTER SEQUENCE public.metrics_metricid_seq OWNED BY public.metrics.metricid;
 
 
 --
@@ -174,7 +174,7 @@ ALTER SEQUENCE public.metrics_metricaid_seq OWNED BY public.metrics.metricaid;
 CREATE TABLE public.slides (
     slideid integer NOT NULL,
     chatid integer,
-    metricaid integer,
+    metricid integer,
     num smallint NOT NULL,
     CONSTRAINT slides_num_check CHECK ((num > 0))
 );
@@ -340,10 +340,10 @@ ALTER TABLE ONLY public.jsons ALTER COLUMN jsonid SET DEFAULT nextval('public.js
 
 
 --
--- Name: metrics metricaid; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: metrics metricid; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.metrics ALTER COLUMN metricaid SET DEFAULT nextval('public.metrics_metricaid_seq'::regclass);
+ALTER TABLE ONLY public.metrics ALTER COLUMN metricid SET DEFAULT nextval('public.metrics_metricid_seq'::regclass);
 
 
 --
@@ -379,11 +379,11 @@ ALTER TABLE ONLY public.versions ALTER COLUMN versionid SET DEFAULT nextval('pub
 --
 
 COPY public.chats (chatid, userid, csvid, jsonid, title, prompt, created_at) FROM stdin;
-1	1	1	1	Анализ продаж Q1	Сгенерируй презентацию для анализ продаж q1	2026-06-29 12:07:13.447423+03
-2	2	2	2	Отчет по маркетингу	Сгенерируй презентацию для отчет по маркетингу	2026-06-29 12:07:13.447423+03
-3	3	3	3	Финансовые показатели	Сгенерируй презентацию для финансовые показатели	2026-06-29 12:07:13.447423+03
-4	4	4	4	HR метрики	Сгенерируй презентацию для hr метрики	2026-06-29 12:07:13.447423+03
-5	5	5	5	Прогноз на год	Сгенерируй презентацию для прогноз на год	2026-06-29 12:07:13.447423+03
+1	1	1	1	Анализ продаж Q1	Сгенерируй презентацию для анализ продаж q1	2026-07-01 12:15:53.908161+03
+2	2	2	2	Отчет по маркетингу	Сгенерируй презентацию для отчет по маркетингу	2026-07-01 12:15:53.908161+03
+3	3	3	3	Финансовые показатели	Сгенерируй презентацию для финансовые показатели	2026-07-01 12:15:53.908161+03
+4	4	4	4	HR метрики	Сгенерируй презентацию для hr метрики	2026-07-01 12:15:53.908161+03
+5	5	5	5	Прогноз на год	Сгенерируй презентацию для прогноз на год	2026-07-01 12:15:53.908161+03
 \.
 
 
@@ -417,7 +417,7 @@ COPY public.jsons (jsonid, file) FROM stdin;
 -- Data for Name: metrics; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.metrics (metricaid, name) FROM stdin;
+COPY public.metrics (metricid, name) FROM stdin;
 1	Accuracy
 2	F1-Score
 3	Precision
@@ -429,37 +429,37 @@ COPY public.metrics (metricaid, name) FROM stdin;
 -- Data for Name: slides; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.slides (slideid, chatid, metricaid, num) FROM stdin;
+COPY public.slides (slideid, chatid, metricid, num) FROM stdin;
 1	1	4	1
-2	1	3	2
-3	1	1	3
-4	1	1	4
-5	1	1	5
-6	1	2	6
-7	2	2	1
-8	2	1	2
-9	2	3	3
+2	1	1	2
+3	1	2	3
+4	1	2	4
+5	1	4	5
+6	1	1	6
+7	2	1	1
+8	2	3	2
+9	2	2	3
 10	2	1	4
-11	2	2	5
-12	2	4	6
-13	3	4	1
+11	2	3	5
+12	2	1	6
+13	3	1	1
 14	3	3	2
-15	3	1	3
-16	3	1	4
+15	3	3	3
+16	3	4	4
 17	3	4	5
-18	3	2	6
-19	4	3	1
-20	4	2	2
-21	4	4	3
-22	4	4	4
-23	4	3	5
+18	3	3	6
+19	4	4	1
+20	4	1	2
+21	4	2	3
+22	4	2	4
+23	4	2	5
 24	4	1	6
-25	5	4	1
-26	5	3	2
-27	5	1	3
+25	5	1	1
+26	5	4	2
+27	5	4	3
 28	5	1	4
-29	5	3	5
-30	5	1	6
+29	5	2	5
+30	5	4	6
 \.
 
 
@@ -468,21 +468,11 @@ COPY public.slides (slideid, chatid, metricaid, num) FROM stdin;
 --
 
 COPY public.tasks (taskid, chatid, versionid, type, prompt, status) FROM stdin;
-1	1	11	1	Обработать версию 11 для чата 1	0
-2	1	27	2	Обработать версию 27 для чата 1	1
-3	1	4	2	Обработать версию 4 для чата 1	2
-4	2	43	1	Обработать версию 43 для чата 2	0
-5	2	39	2	Обработать версию 39 для чата 2	1
-6	2	56	3	Обработать версию 56 для чата 2	2
-7	3	93	3	Обработать версию 93 для чата 3	0
-8	3	62	3	Обработать версию 62 для чата 3	1
-9	3	65	3	Обработать версию 65 для чата 3	2
-10	4	95	1	Обработать версию 95 для чата 4	0
-11	4	97	3	Обработать версию 97 для чата 4	1
-12	4	102	1	Обработать версию 102 для чата 4	2
-13	5	148	2	Обработать версию 148 для чата 5	0
-14	5	143	2	Обработать версию 143 для чата 5	1
-15	5	130	1	Обработать версию 130 для чата 5	2
+1	1	1	1	Обработать версию 1 для чата 1	1
+2	2	58	1	Обработать версию 58 для чата 2	1
+3	3	86	2	Обработать версию 86 для чата 3	2
+4	4	95	1	Обработать версию 95 для чата 4	0
+5	5	143	2	Обработать версию 143 для чата 5	0
 \.
 
 
@@ -504,158 +494,156 @@ COPY public.users (userid, department) FROM stdin;
 --
 
 COPY public.versions (versionid, slideid, "json", prompt, created_at, is_final) FROM stdin;
-1	1	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-2	1	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-3	1	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-4	1	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-5	2	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-6	2	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-7	2	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-8	2	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-9	2	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-10	3	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-11	3	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-12	3	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-13	3	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-14	3	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-15	3	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-16	4	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-17	4	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-18	4	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-19	4	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-20	5	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-21	5	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-22	5	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-23	5	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-24	5	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-25	6	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-26	6	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-27	6	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-28	6	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-29	6	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-30	7	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-31	7	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-32	7	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-33	7	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-34	7	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-35	7	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-36	8	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-37	8	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-38	8	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-39	8	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-40	9	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-41	9	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-42	9	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-43	9	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-44	9	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-45	10	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-46	10	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-47	10	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-48	10	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-49	10	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-50	10	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-51	11	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-52	11	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-53	11	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-54	11	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-55	11	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-56	12	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-57	12	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-58	12	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-59	12	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-60	12	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-61	12	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-62	13	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-63	13	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-64	13	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-65	13	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-66	13	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-67	13	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-68	14	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-69	14	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-70	14	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-71	14	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-72	14	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-73	15	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-74	15	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-75	15	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-76	15	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-77	15	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-78	16	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-79	16	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-80	16	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-81	16	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-82	16	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-83	17	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-84	17	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-85	17	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-86	17	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-87	17	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-88	17	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-89	18	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-90	18	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-91	18	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-92	18	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-93	18	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-94	18	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-95	19	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-96	19	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-97	19	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-98	19	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-99	20	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-100	20	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-101	20	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-102	20	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-103	21	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-104	21	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-105	21	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-106	21	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-107	21	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-108	21	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-109	22	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-110	22	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-111	22	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-112	22	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-113	22	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-114	22	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-115	23	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-116	23	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-117	23	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-118	23	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-119	24	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-120	24	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-121	24	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-122	24	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-123	24	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-124	25	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-125	25	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-126	25	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-127	25	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-128	26	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-129	26	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-130	26	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-131	26	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-132	26	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-133	27	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-134	27	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-135	27	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-136	27	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-137	27	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-138	27	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-139	28	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-140	28	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-141	28	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-142	28	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-143	28	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-144	29	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-145	29	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-146	29	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-147	29	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
-148	30	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-149	30	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-150	30	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-151	30	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-06-29 12:07:13.447423+03	f
-152	30	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-06-29 12:07:13.447423+03	t
+1	1	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+2	1	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+3	1	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+4	1	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+5	2	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+6	2	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+7	2	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+8	2	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+9	2	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-07-01 12:55:53.961989+03	f
+10	2	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+11	3	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+12	3	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+13	3	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+14	3	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+15	3	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+16	4	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+17	4	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+18	4	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+19	4	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+20	4	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-07-01 12:55:53.961989+03	f
+21	4	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+22	5	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+23	5	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+24	5	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+25	5	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+26	6	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+27	6	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+28	6	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+29	6	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+30	6	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+31	7	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+32	7	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+33	7	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+34	7	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+35	8	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+36	8	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+37	8	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+38	8	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+39	9	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+40	9	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+41	9	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+42	9	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+43	9	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+44	10	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+45	10	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+46	10	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+47	10	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+48	10	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+49	11	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+50	11	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+51	11	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+52	11	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+53	11	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-07-01 12:55:53.961989+03	f
+54	11	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+55	12	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+56	12	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+57	12	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+58	12	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+59	12	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-07-01 12:55:53.961989+03	f
+60	12	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+61	13	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+62	13	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+63	13	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+64	13	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+65	14	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+66	14	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+67	14	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+68	14	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+69	14	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+70	15	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+71	15	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+72	15	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+73	15	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+74	15	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-07-01 12:55:53.961989+03	f
+75	15	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+76	16	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+77	16	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+78	16	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+79	16	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+80	16	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-07-01 12:55:53.961989+03	f
+81	16	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+82	17	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+83	17	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+84	17	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+85	17	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+86	17	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-07-01 12:55:53.961989+03	f
+87	17	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+88	18	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+89	18	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+90	18	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+91	18	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+92	18	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+93	19	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+94	19	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+95	19	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+96	19	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+97	19	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+98	20	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+99	20	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+100	20	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+101	20	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+102	21	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+103	21	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+104	21	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+105	21	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+106	21	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-07-01 12:55:53.961989+03	f
+107	21	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+108	22	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+109	22	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+110	22	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+111	22	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+112	22	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+113	23	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+114	23	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+115	23	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+116	23	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+117	24	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+118	24	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+119	24	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+120	24	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+121	24	{"status": "draft", "changes": "Правка 5", "iteration": 5}	Что-то сделать	2026-07-01 12:55:53.961989+03	f
+122	24	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+123	25	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+124	25	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+125	25	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+126	25	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+127	25	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+128	26	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+129	26	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+130	26	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+131	26	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+132	26	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+133	27	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+134	27	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+135	27	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+136	27	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+137	28	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+138	28	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+139	28	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+140	28	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+141	29	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+142	29	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+143	29	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+144	29	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+145	29	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
+146	30	{"status": "draft", "changes": "Правка 1", "iteration": 1}	Что-то сделать	2026-07-01 12:15:53.961989+03	f
+147	30	{"status": "draft", "changes": "Правка 2", "iteration": 2}	Что-то сделать	2026-07-01 12:25:53.961989+03	f
+148	30	{"status": "draft", "changes": "Правка 3", "iteration": 3}	Что-то сделать	2026-07-01 12:35:53.961989+03	f
+149	30	{"status": "draft", "changes": "Правка 4", "iteration": 4}	Что-то сделать	2026-07-01 12:45:53.961989+03	f
+150	30	{"status": "final", "version": "1.0", "approved": true}	Заменить график на гистограмму	2026-07-01 12:15:53.908161+03	t
 \.
 
 
@@ -681,10 +669,10 @@ SELECT pg_catalog.setval('public.jsons_jsonid_seq', 5, true);
 
 
 --
--- Name: metrics_metricaid_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: metrics_metricid_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.metrics_metricaid_seq', 4, true);
+SELECT pg_catalog.setval('public.metrics_metricid_seq', 4, true);
 
 
 --
@@ -698,7 +686,7 @@ SELECT pg_catalog.setval('public.slides_slideid_seq', 30, true);
 -- Name: tasks_taskid_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.tasks_taskid_seq', 15, true);
+SELECT pg_catalog.setval('public.tasks_taskid_seq', 5, true);
 
 
 --
@@ -712,7 +700,7 @@ SELECT pg_catalog.setval('public.users_userid_seq', 5, true);
 -- Name: versions_versionid_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.versions_versionid_seq', 152, true);
+SELECT pg_catalog.setval('public.versions_versionid_seq', 150, true);
 
 
 --
@@ -744,7 +732,7 @@ ALTER TABLE ONLY public.jsons
 --
 
 ALTER TABLE ONLY public.metrics
-    ADD CONSTRAINT metrics_pkey PRIMARY KEY (metricaid);
+    ADD CONSTRAINT metrics_pkey PRIMARY KEY (metricid);
 
 
 --
@@ -827,11 +815,11 @@ ALTER TABLE ONLY public.slides
 
 
 --
--- Name: slides slides_metricaid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: slides slides_metricid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.slides
-    ADD CONSTRAINT slides_metricaid_fkey FOREIGN KEY (metricaid) REFERENCES public.metrics(metricaid) ON DELETE CASCADE;
+    ADD CONSTRAINT slides_metricid_fkey FOREIGN KEY (metricid) REFERENCES public.metrics(metricid) ON DELETE CASCADE;
 
 
 --
@@ -862,5 +850,5 @@ ALTER TABLE ONLY public.versions
 -- PostgreSQL database dump complete
 --
 
-\unrestrict akNtNtlZYaNH1pdiyqm7gCdS2wxo0vv4LSsfSVBc5U7xi2Em8Al2VhKnkRjex8e
+\unrestrict 1Y8hQumpGTi1g5dRSZ95svYNPItzO2dLYCKVXxJZMV5HCJS8OINFSdonbS8jkDJ
 

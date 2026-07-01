@@ -39,7 +39,7 @@ CREATE TABLE metrics (
 CREATE TABLE slides (
     slideID     SERIAL NOT NULL PRIMARY KEY,
     chatID      INT REFERENCES chats(chatID) ON DELETE CASCADE,
-    metricaID   INT REFERENCES metrics(metricID) ON DELETE CASCADE,
+    metricID   INT REFERENCES metrics(metricID) ON DELETE CASCADE,
     num         SMALLINT NOT NULL CHECK (num > 0),
     
     CONSTRAINT uq_slide_num UNIQUE (chatID, num)
