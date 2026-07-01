@@ -2,21 +2,17 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://example.com/schemas/presentation_draft_slide.schema.json",
   "title": "PresentationDraftSlide",
-  "description": "Описание одного слайда-черновика. Нейронка 2 генерирует объекты по этой схеме. Слайды одного показателя (indicator) Resolver затем объединяет в финальный JSON по порядку. Только ссылки на источник через data_binding.",
+  "description": "Описание одного слайда-черновика. Нейронка 2 генерирует объекты по этой схеме. Resolver объединяет слайды в финальный JSON по порядку. Только ссылки на источник через data_description.",
   "type": "object",
   "required": ["meta", "objects"],
   "properties": {
     "meta": {
       "type": "object",
-      "required": ["slide_id", "indicator", "title"],
+      "required": ["slide_id", "title"],
       "properties": {
         "slide_id": {
           "type": "string",
           "description": "Уникальный ID слайда. Генерировать как 'sld_' + 12 hex-символов"
-        },
-        "indicator": {
-          "type": "string",
-          "description": "Имя показателя по которому строятся слайды. По нему Resolver группирует и сортирует слайды одной метрики перед сборкой финала"
         },
         "title": {
           "type": "string",
@@ -39,8 +35,8 @@
   "$defs": {
     "DraftObject": {
       "type": "object",
-      "required": ["object_id", "type", "cell_pos", "span"],
-      "description": "Один объект на слайде. Нейронка указывает только тип, начальную ячейку и откуда брать данные - финальные размеры считает Resolver.",
+      "required": ["object_id", "type", "cell_pos", "span", "data_description"],
+      "description": "Один объект на слайде. Нейронка указывает тип, начальную ячейку и описание нужных данных - финальные размеры считает Resolver.",
       "properties": {
         "object_id": {
           "type": "string",
@@ -48,7 +44,8 @@
         },
         "type": {
           "type": "string",
-          "enum": ["TEXT", "TABLE", "CHART"]
+          "enum": ["TEXT", "TABLE", "LINE", "BAR", "PIE", "WATERFALL"],
+          "description": "Единый тип объекта."
         },
         "cell_pos": {
           "type": "object",
@@ -56,15 +53,15 @@
           "properties": {
             "x": {
               "type": "integer",
-              "minimum": 0,
-              "maximum": 3,
-              "description": "Колонка старта (0 - крайняя левая, 3 - крайняя правая)."
+              "minimum": 1,
+              "maximum": 4,
+              "description": "Колонка старта (1 - крайняя левая, 4 - крайняя правая)."
             },
             "y": {
               "type": "integer",
-              "minimum": 0,
-              "maximum": 2,
-              "description": "Строка старта (0 - верхняя, 2 - нижняя)."
+              "minimum": 1,
+              "maximum": 3,
+              "description": "Строка старта (1 - верхняя, 3 - нижняя)."
             }
           },
           "required": ["x", "y"]
@@ -89,37 +86,13 @@
             }
           }
         },
-        "text": {
-          "type": "string",
-          "description": "Только для type=TEXT. Аналитический комментарий или описание, генерируемый нейронкой. Поддерживает markdown."
-        },
-        "data_binding": {
-          "description": "Только для type=TABLE или CHART. Семантическое описание того, какие данные нужно извлечь из исходной CSV. Реальные числа подставятся при конвертации в Final JSON (нейронкой или Resolver'ом).",
-          "$ref": "#/$defs/DataBinding"
-        }
-      },
-      "if":   { "properties": { "type": { "const": "TEXT" } } },
-      "then": { "required": ["text"] },
-      "else": { "required": ["data_binding"] }
-    },
-
-    "DataBinding": {
-      "type": "object",
-      "required": ["chart_type"],
-      "description": "Описание запроса к данным. Resolver исполняет его как запрос к pandas DataFrame и строит нужный data-блок (TextData/TableData/ChartData/WaterfallData).",
-      "properties": {
-        "chart_type": {
-          "type": "string",
-          "enum": ["LINE", "BAR", "PIE", "WATERFALL", "TABLE"],
-          "description": "Определяет тип визуализации и соответствующий data-блок в Final JSON: TABLE → TableData, WATERFALL → WaterfallData, LINE/BAR/PIE → ChartData с соответствующим chart_type"
-        },
         "title": {
           "type": "string",
-          "description": "Название DATA-объекта слайда (таблица/график)."
+          "description": "Название DATA-объекта (таблица/график). Необязательно - у TEXT-объектов заголовка не бывает, только описание в data_description."
         },
         "data_description": {
           "type": "string",
-          "description": "Описание объекта и данных, которые в нем записаны, с указанием параметров и названием столбцов/параметров."
+          "description": "Для TEXT - комментарий/описание, которое должна написать нейронка (поддерживает markdown). Для остальных описание объекта и данных, которые в нем записаны, с указанием параметров и названием столбцов/параметров."
         }
       }
     }
