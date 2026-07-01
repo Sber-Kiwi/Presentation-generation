@@ -141,6 +141,20 @@ components:
 # Endpoints
 paths:
 
+  /chat:
+    get:
+      tags: [Chat]
+      summary: Loading chat history information after restart
+      responses:
+        '200':
+          description: Chats history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Chat"
+
   /chat/start:
     post:
       tags: [Chat]
