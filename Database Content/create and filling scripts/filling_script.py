@@ -14,7 +14,7 @@ DB_CONFIG = {
 def clear_database(cur):
     cur.execute("""
         TRUNCATE TABLE 
-            tasks, versions, slides, chats, jsons, csvs, users, metrics 
+            tasks, versions, slides, chats, jsons, csvs, users 
         RESTART IDENTITY CASCADE;
     """)
 
@@ -46,11 +46,6 @@ def populate_database():
             data = {"theme": "dark" if i%2==0 else "light", "index": i, "active": True}
             cur.execute("INSERT INTO jsons (file) VALUES (%s) RETURNING jsonID;", (json.dumps(data),))
             json_ids.append(cur.fetchone()[0])
-
-        metric_ids = []
-        for name in ["Accuracy", "F1-Score", "Precision", "Recall"]:
-            cur.execute("INSERT INTO metrics (name) VALUES (%s) RETURNING metricID;", (name,))
-            metric_ids.append(cur.fetchone()[0])
       
         chat_ids = []
         chat_titles = [
@@ -73,13 +68,11 @@ def populate_database():
 
         slides_data = []
         for chat_id in chat_ids:
-            for num in range(1, 7):
-                metric_id = random.choice(metric_ids)
-                
+            for num in range(1, 7):                
                 cur.execute("""
-                    INSERT INTO slides (chatID, metricID, num) 
-                    VALUES (%s, %s, %s) RETURNING slideID;
-                """, (chat_id, metric_id, num))
+                    INSERT INTO slides (chatID, num) 
+                    VALUES (%s, %s) RETURNING slideID;
+                """, (chat_id, num))
                 
                 slide_id = cur.fetchone()[0]
                 slides_data.append((slide_id, chat_id))
