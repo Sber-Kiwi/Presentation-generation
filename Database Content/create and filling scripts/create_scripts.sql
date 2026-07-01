@@ -30,16 +30,9 @@ CREATE TABLE chats (
     CONSTRAINT chk_chat_prompt CHECK (char_length(trim(prompt)) > 0)
 );
 
-CREATE TABLE metrics (
-    metricID       SERIAL NOT NULL PRIMARY KEY,
-    name            VARCHAR(50),
-    CONSTRAINT chk_metric_name CHECK (char_length(trim(name)) > 0)
-);
-
 CREATE TABLE slides (
     slideID     SERIAL NOT NULL PRIMARY KEY,
     chatID      INT REFERENCES chats(chatID) ON DELETE CASCADE,
-    metricID   INT REFERENCES metrics(metricID) ON DELETE CASCADE,
     num         SMALLINT NOT NULL CHECK (num > 0),
     
     CONSTRAINT uq_slide_num UNIQUE (chatID, num)
