@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mxfile host="app.diagrams.net">
   <diagram name="Страница-1" id="c9Sg7NBqQtHn7YfKarIJ">
-    <mxGraphModel dx="2261" dy="562" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+    <mxGraphModel dx="2454" dy="661" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -461,10 +461,10 @@
             <mxPoint x="-805" y="485" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="J3j7iB_GcLPlZf58ssDh-289" edge="1" parent="1" source="J3j7iB_GcLPlZf58ssDh-2" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERoneToMany;rounded=0;exitX=1.003;exitY=0.326;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitPerimeter=0;" target="J3j7iB_GcLPlZf58ssDh-290" value="">
+        <mxCell id="J3j7iB_GcLPlZf58ssDh-314" edge="1" parent="1" source="J3j7iB_GcLPlZf58ssDh-2" style="edgeStyle=entityRelationEdgeStyle;fontSize=12;html=1;endArrow=ERmandOne;startArrow=ERmandOne;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="J3j7iB_GcLPlZf58ssDh-290" value="">
           <mxGeometry height="100" relative="1" width="100" as="geometry">
-            <mxPoint x="-547" y="474" as="sourcePoint" />
-            <mxPoint x="-657" y="224" as="targetPoint" />
+            <mxPoint x="-600" y="450" as="sourcePoint" />
+            <mxPoint x="-500" y="350" as="targetPoint" />
           </mxGeometry>
         </mxCell>
       </root>
