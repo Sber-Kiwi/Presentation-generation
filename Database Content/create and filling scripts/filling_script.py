@@ -119,11 +119,11 @@ def populate_database():
         for chat_id in chat_ids:
             chat_versions = versions_by_chat[chat_id]
             
-            # Выбираем ровно ОДНУ версию для создания единственной задачи
+            # chats:tasks 1:1
             selected_version = random.choice(chat_versions) 
             
             status = random.randint(0, 2)
-            task_type = random.randint(1, 3)
+            task_type = random.randint(1, 2)
             
             cur.execute("""
                 INSERT INTO tasks (chatID, versionID, type, prompt, status) 
