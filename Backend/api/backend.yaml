@@ -4,147 +4,14 @@ info:
   version: 1.0.0
   description: AI agent tool that analyzes table of data and generates a presentation from it
 
-
-components:
-  
-  schemas:
-    
-    CsvFile:
-      type: string
-      format: binary
-
-    JsonDraftSlide:
-      $ref: "./../JSON_schemas/presentation_draft.schema.json"
-
-    SlideVersion:
-      type: object
-      properties:
-        versionID:  {type: string, example: "version_777"}
-        slide:      {$ref: "#/components/schemas/JsonDraftSlide"}
-        createdAt:  {type: string, format: date-time}
-
-    # Frontend to backend for chat creating
-    StartQuery:
-      type: object
-      required: [prompt, table]
-      properties:
-        prompt: {type: string}
-        table:  {$ref: "#/components/schemas/CsvFile"}
-
-    # Backend to frontend send chat information
-    Chat:
-      type: object
-      properties:
-        id:         {type: string, example: "chat_123"}
-        title:      {type: string}
-        slides:
-          type: array
-          items:
-            type: object
-            properties:
-              slideID:  {type: string, example: "slide_777"}
-              order:    {type: integer, example: 1}
-              versions:
-                type: array
-                items:
-                  $ref: "#/components/schemas/SlideVersion"
-              state:
-                $ref: "#/components/schemas/SlideState"
-
-    JobResponse:
-      type: object
-      properties:
-        chatID:
-          type: string
-          example: "chat_123"
-        slideID:
-          type: string
-          example: "slide_777"
-          nullable: true
-        status:
-          type: string
-          enum: [pending, processing, done, failed]
-          example: "pending"
-    
-    ChatStatus:
-      type: object
-      properties:
-        status:
-          type: string
-          enum: [pending, processing, done, failed]
-          example: "pending"
-        error:
-          type: string
-          nullable: true
-          example: null
-
-    # Frontend to backend for slide edit
-    EditQuery:
-      type: object
-      required: [prompt, versionID]
-      properties:
-        prompt:     {type: string}
-        versionID:  {type: string, example: "version_777"}
-    
-    SlideState:
-      type: object
-      properties:
-        selectedVersionID:  {type: string, example: "version_777"}
-        inPresentation:     {type: boolean, example: true}
-
-    SlideStatus:
-      type: object
-      properties:
-        status:
-          type: string
-          enum: [idle, pending, processing, done, failed]
-          example: "processing"
-        newVersionID:
-          type: string
-          nullable: true
-          description: If done then ID else null
-          example: "version_778"
-        error:
-          type: string
-          nullable: true
-          example: null
-
-    DownloadStatus:
-      type: object
-      properties:
-        chatID:
-          type: string
-          example: "chat_123"
-        status:
-          type: string
-          enum: [pending, processing, done, failed]
-          example: "pending"
-        error:
-          type: string
-          nullable: true
-          example: null
-
-    Error:
-      type: object
-      properties:
-        code:    { type: string, example: "VALIDATION_ERROR" }
-        message: { type: string, example: ".csv file required" }
-        details:
-          type: array
-          items:
-            type: object
-            properties:
-              field:   { type: string }
-              message: { type: string }
-
-
 # Endpoints
 paths:
 
-  /chat:
+  /chats:
     get:
-      tags: [Chat]
-      summary: Loading chat history information after restart
+      tags:
+        - Chat
+      summary: List chat history after restart
       responses:
         '200':
           description: Chats history
@@ -154,10 +21,16 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Chat"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
-  /chat/start:
     post:
-      tags: [Chat]
+      tags:
+        - Chat
       summary: Create a chat and start a slide generator
       requestBody:
         required: true
@@ -165,6 +38,9 @@ paths:
           multipart/form-data:
             schema:
               $ref: "#/components/schemas/StartQuery"
+            encoding:
+              table:
+                contentType: text/csv
       responses:
         '202':
           description: Chat is created, generator is started
@@ -178,16 +54,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  
-  /chat/{chatID}/status:
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /chats/{chatID}/status:
     get:
-      tags: [Chat]
+      tags:
+        - Chat
       summary: Check slide generation status
       parameters:
         - name: chatID
           in: path
           required: true
-          schema: {type: string, example: "chat_123"}
+          description: Identifier of the chat.
+          schema:
+            type: string
+            example: "chat_123"
       responses:
         '200':
           description: Current generation status
@@ -201,16 +87,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  
-  /chat/{chatID}:
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /chats/{chatID}:
     get:
-      tags: [Chat]
-      summary: Page with slide drafts
+      tags:
+        - Chat
+      summary: Get page with slide drafts
       parameters:
         - name: chatID
           in: path
           required: true
-          schema: {type: string, example: "chat_123"}
+          description: Identifier of the chat.
+          schema:
+            type: string
+            example: "chat_123"
       responses:
         '200':
           description: Page with slides
@@ -224,20 +120,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  
-  /chat/{chatID}/slides/{slideID}/edit:
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /chats/{chatID}/slides/{slideID}/edits:
     post:
-      tags: [Chat]
-      summary: Send prompt for slide editing
+      tags:
+        - Chat
+      summary: Create a slide edit request
       parameters:
         - name: chatID
           in: path
           required: true
-          schema: {type: string, example: "chat_123"}
+          description: Identifier of the chat.
+          schema:
+            type: string
+            example: "chat_123"
         - name: slideID
           in: path
           required: true
-          schema: {type: string, example: "slide_777"}
+          description: Identifier of the slide to edit.
+          schema:
+            type: string
+            example: "slide_777"
       requestBody:
         required: true
         content:
@@ -252,27 +161,47 @@ paths:
               schema:
                 $ref: "#/components/schemas/JobResponse"
         '404':
-          description: Chat not found
+          description: Chat or slide not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '422':
+          description: Invalid prompt or unknown versionID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /chat/{chatID}/slides/{slideID}/status:
+  /chats/{chatID}/slides/{slideID}/status:
     get:
-      tags: [Chat]
-      summary: Slide editing status
+      tags:
+        - Chat
+      summary: Check slide editing status
       parameters:
         - name: chatID
           in: path
           required: true
-          schema: {type: string, example: "chat_123"}
+          description: Identifier of the chat.
+          schema:
+            type: string
+            example: "chat_123"
         - name: slideID
           in: path
           required: true
-          schema: {type: string, example: "slide_777"}
+          description: Identifier of the slide.
+          schema:
+            type: string
+            example: "slide_777"
       responses:
         '200':
+          description: Current slide editing status
           content:
             application/json:
               schema:
@@ -283,50 +212,80 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
-  /chat/{chatID}/slides/{slideID}:
+  /chats/{chatID}/slides/{slideID}:
     get:
-      tags: [Chat]
+      tags:
+        - Chat
       summary: Get edited slide
       parameters:
         - name: chatID
           in: path
           required: true
-          schema: {type: string, example: "chat_123"}
+          description: Identifier of the chat.
+          schema:
+            type: string
+            example: "chat_123"
         - name: slideID
           in: path
           required: true
-          schema: {type: string, example: "slide_777"}
+          description: Identifier of the slide.
+          schema:
+            type: string
+            example: "slide_777"
       responses:
         '200':
           description: Edited slide
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  slideID:  {type: string, example: "slide_777"}
-                  $ref: "#/components/schemas/SlideVersion"
+                allOf:
+                  - $ref: "#/components/schemas/SlideVersion"
+                  - type: object
+                    properties:
+                      slideID:
+                        type: string
+                        example: "slide_777"
+                        description: Identifier of the slide this version belongs to.
         '404':
           description: Slide not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
-  /chat/{chatID}/slides/{slideID}/shift:
+  /chats/{chatID}/slides/{slideID}/versions:
     post:
-      tags: [ Chat ]
-      summary: Send JSON with changes made using Drag-and-Drop
+      tags:
+        - Chat
+      summary: Create a new slide version from Drag-and-Drop changes
       parameters:
         - name: chatID
           in: path
           required: true
-          schema: { type: string, example: "chat_123" }
+          description: Identifier of the chat.
+          schema:
+            type: string
+            example: "chat_123"
         - name: slideID
           in: path
           required: true
-          schema: { type: string, example: "slide_777" }
+          description: Identifier of the slide.
+          schema:
+            type: string
+            example: "slide_777"
       requestBody:
         required: true
         content:
@@ -341,68 +300,71 @@ paths:
               schema:
                 $ref: "#/components/schemas/JobResponse"
         '404':
-          description: Chat not found
+          description: Chat or slide not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '422':
+          description: Invalid slide version payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /chat/{chatID}/download/start:
+  /chats/{chatID}/downloads:
     post:
-      tags: [Chat]
-      summary: Start presentation export
+      tags:
+        - Chat
+      summary: Create a presentation export
       parameters:
         - name: chatID
           in: path
           required: true
-          schema: {type: string, example: "chat_123"}
+          description: Identifier of the chat.
+          schema:
+            type: string
+            example: "chat_123"
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [slides]
+              required:
+                - slides
               properties:
                 slides:
                   type: array
-                  description: List of slide states
+                  description: List of slide states to include in the export.
                   items:
                     $ref: "#/components/schemas/SlideState"
                 editedSlides:
                   type: array
-                  description: JSONs of slides changed via Drag-and-Drop
+                  description: Slides changed via Drag-and-Drop, provided as full version objects.
                   items:
                     type: object
-                    required: [slideID, version]
+                    required:
+                      - slideID
+                      - version
                     properties:
-                      slideID: { type: string, example: "slide_34" }
-                      version: { $ref: "#/components/schemas/SlideVersion" }
-
+                      slideID:
+                        type: string
+                        example: "slide_34"
+                        description: Identifier of the slide that was changed.
+                      version:
+                        allOf:
+                          - $ref: "#/components/schemas/SlideVersion"
+                        description: The version to use for this slide in the export.
       responses:
         '202':
           description: Export started
-          content:
-            application/json:
-              schema: {$ref: "#/components/schemas/DownloadStatus"}
-        '404':
-          description: Chat not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /chat/{chatID}/download/status:
-    get:
-      tags: [Chat]
-      summary: Check export status
-      parameters:
-        - name: chatID
-          in: path
-          required: true
-          schema: {type: string, example: "chat_123"}
-      responses:
-        '200':
           content:
             application/json:
               schema:
@@ -413,35 +375,306 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        '422':
+          description: Invalid or incomplete slides list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
-  /chat/{chatID}/download:
     get:
-      tags: [Chat]
+      tags:
+        - Chat
       summary: Download presentation bundle (PPTX + JSON)
       parameters:
         - name: chatID
           in: path
           required: true
-          schema: {type: string, example: "chat_123"}
+          description: Identifier of the chat.
+          schema:
+            type: string
+            example: "chat_123"
       responses:
         '200':
           description: ZIP archive with PPTX and JSON
           content:
             application/zip:
-              schema: {type: string, format: binary}
+              schema:
+                type: string
+                contentMediaType: application/zip
+                description: Binary contents of the ZIP archive.
           headers:
             Content-Disposition:
               schema:
                 type: string
                 example: attachment; filename="presentation.zip"
-        '409':
-          description: File is not ready yet
-          content:
-            application/json:
-              schema: {$ref: "#/components/schemas/Error"}
         '404':
           description: Chat not found
           content:
             application/json:
-              schema: {$ref: "#/components/schemas/Error"}
+              schema:
+                $ref: "#/components/schemas/Error"
+        '409':
+          description: File is not ready yet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
+  /chats/{chatID}/downloads/status:
+    get:
+      tags:
+        - Chat
+      summary: Check export status
+      parameters:
+        - name: chatID
+          in: path
+          required: true
+          description: Identifier of the chat.
+          schema:
+            type: string
+            example: "chat_123"
+      responses:
+        '200':
+          description: Current export status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadStatus"
+        '404':
+          description: Chat not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+
+components:
+
+  schemas:
+
+    CsvFile:
+      type: string
+      contentMediaType: text/csv
+      description: Source CSV file with tabular data used to generate the presentation.
+
+    JsonDraftSlide:
+      $ref: "./../JSON_schemas/presentation_draft.schema.json"
+
+    SlideVersion:
+      type: object
+      description: A single version of a slide's content.
+      properties:
+        versionID:
+          type: string
+          description: Unique identifier of this slide version.
+          example: "version_777"
+        slide:
+          allOf:
+            - $ref: "#/components/schemas/JsonDraftSlide"
+          description: Slide content as a structured draft object.
+        createdAt:
+          type: string
+          format: date-time
+          description: Date and time when this version was created.
+          example: "2026-07-03T10:15:00Z"
+
+    StartQuery:
+      type: object
+      description: Payload used to create a new chat and start slide generation. Sent from frontend to backend.
+      required:
+        - prompt
+        - table
+      properties:
+        prompt:
+          type: string
+          description: User's instruction describing the desired presentation.
+          example: "Build a 10-slide investor pitch deck from this sales data."
+        table:
+          $ref: "#/components/schemas/CsvFile"
+
+    Chat:
+      type: object
+      description: A chat session containing the generated slide drafts and their editing history. Sent from backend to frontend.
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the chat.
+          example: "chat_123"
+        title:
+          type: string
+          description: Human-readable title of the chat.
+          example: "Q3 Sales Pitch Deck"
+        slides:
+          type: array
+          description: Ordered list of slides belonging to this chat.
+          items:
+            type: object
+            properties:
+              slideID:
+                type: string
+                description: Unique identifier of the slide.
+                example: "slide_777"
+              order:
+                type: integer
+                description: Position of the slide within the presentation, starting at 1.
+                example: 1
+              versions:
+                type: array
+                description: All versions ever created for this slide.
+                items:
+                  $ref: "#/components/schemas/SlideVersion"
+              state:
+                $ref: "#/components/schemas/SlideState"
+
+    JobResponse:
+      type: object
+      description: Response returned when an asynchronous job (generation, edit, or version change) has been accepted.
+      properties:
+        chatID:
+          type: string
+          description: Identifier of the chat the job belongs to.
+          example: "chat_123"
+        slideID:
+          type:
+            - string
+            - "null"
+          description: Identifier of the slide the job applies to, or null if the job applies to the whole chat.
+          example: "slide_777"
+        status:
+          type: string
+          enum: [pending, processing, done, failed]
+          description: Current status of the job.
+          example: "pending"
+
+    ChatStatus:
+      type: object
+      description: Status of the presentation generation job for a chat.
+      properties:
+        status:
+          type: string
+          enum: [pending, processing, done, failed]
+          description: Current status of the generation job.
+          example: "pending"
+        error:
+          type:
+            - string
+            - "null"
+          description: Error message if the job failed, otherwise null.
+          example: null
+
+    EditQuery:
+      type: object
+      description: Payload used to request an edit of a slide version. Sent from frontend to backend.
+      required:
+        - prompt
+        - versionID
+      properties:
+        prompt:
+          type: string
+          description: Instruction describing the desired change to the slide.
+          example: "Make the headline shorter and add a bar chart of Q3 revenue."
+        versionID:
+          type: string
+          description: Identifier of the slide version to base the edit on.
+          example: "version_777"
+
+    SlideState:
+      type: object
+      description: Describes which version of a slide is active and whether it is included in the final presentation.
+      properties:
+        selectedVersionID:
+          type: string
+          description: Identifier of the version currently selected for this slide.
+          example: "version_777"
+        inPresentation:
+          type: boolean
+          description: Whether this slide is included in the exported presentation.
+          example: true
+
+    SlideStatus:
+      type: object
+      description: Status of an edit or version-change job for a single slide.
+      properties:
+        status:
+          type: string
+          enum: [idle, pending, processing, done, failed]
+          description: Current status of the job. "idle" means no edit is currently in progress for this slide.
+          example: "processing"
+        newVersionID:
+          type:
+            - string
+            - "null"
+          description: Identifier of the newly created version if the job is done, otherwise null.
+          example: "version_778"
+        error:
+          type:
+            - string
+            - "null"
+          description: Error message if the job failed, otherwise null.
+          example: null
+
+    DownloadStatus:
+      type: object
+      description: Status of a presentation export job.
+      properties:
+        chatID:
+          type: string
+          description: Identifier of the chat the export belongs to.
+          example: "chat_123"
+        status:
+          type: string
+          enum: [pending, processing, done, failed]
+          description: Current status of the export job.
+          example: "pending"
+        error:
+          type:
+            - string
+            - "null"
+          description: Error message if the export failed, otherwise null.
+          example: null
+
+    Error:
+      type: object
+      description: Standard error response.
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code.
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          description: Human-readable error message.
+          example: ".csv file required"
+        details:
+          type: array
+          description: Optional list of field-level validation errors.
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: Name of the field that failed validation.
+                example: "table"
+              message:
+                type: string
+                description: Description of why the field failed validation.
+                example: "table is required and must be a valid CSV file"
