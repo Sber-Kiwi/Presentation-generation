@@ -1,0 +1,20 @@
+services:
+  db:
+    container_name: kiwi-database
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5332:5432"
+    volumes:
+      - db_data:/var/lib/postgresql
+    networks:
+      - db
+
+networks:
+  db:
+    driver: bridge
+
+volumes:
+  db_data:
