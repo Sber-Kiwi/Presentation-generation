@@ -20,7 +20,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Chat"
+                  $ref: "#/components/schemas/ChatSummary"
         '500':
           description: Internal server error
           content:
@@ -511,6 +511,19 @@ components:
         table:
           $ref: "#/components/schemas/CsvFile"
 
+    ChatSummary:
+      type: object
+      description: Chat history which is loading every application restart. Sent from backend to frontend.
+      properties:
+        chatID:
+          type: string
+          description: Unique identifier of the chat.
+          example: "chat_123"
+        title:
+          type: string
+          description: Human-readable title of the chat.
+          example: "Q3 Sales Pitch Deck"
+    
     Chat:
       type: object
       description: A chat session containing the generated slide drafts and their editing history. Sent from backend to frontend.
