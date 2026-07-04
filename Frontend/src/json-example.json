@@ -1,0 +1,670 @@
+{
+  "chats": [
+    {
+      "id": "chat_123",
+      "title": "Q3 Sales Pitch Deck",
+      "slides": [
+        {
+          "slideID": "slide_777",
+          "order": 1,
+          "versions": [
+            {
+              "versionID": "version_1",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_e0f7dbc60123",
+                  "title": "Общий динамический обзор дохода банка",
+                  "notes": null
+                },
+                "objects": [
+                  {
+                    "type": "LINE_CHART",
+                    "text": "Динамика дохода по годам",
+                    "cell_pos": {
+                      "x": 1,
+                      "y": 1
+                    },
+                    "span": {
+                      "x": 4,
+                      "y": 3
+                    }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-03T10:15:00Z"
+            }
+          ],
+          "state": {
+            "selectedVersionID": "version_1",
+            "inPresentation": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "chat_001",
+      "title": "Q4 Marketing Strategy",
+      "slides": [
+        {
+          "slideID": "slide_001_1",
+          "order": 1,
+          "versions": [
+            {
+              "versionID": "version_1",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_a1b2c3",
+                  "title": "Главный баннер",
+                  "notes": "Начальный драфт с одним большим изображением."
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Стратегия на Q4: Захват рынка",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "IMAGE",
+                    "text": "Hero Image",
+                    "cell_pos": { "x": 1, "y": 2 },
+                    "span": { "x": 4, "y": 2 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-03T11:00:00Z"
+            },
+            {
+              "versionID": "version_2",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_a1b2c3",
+                  "title": "Главный баннер",
+                  "notes": "Добавлен текстовый блок с описанием."
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Стратегия на Q4: Захват рынка",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "IMAGE",
+                    "text": "Hero Image",
+                    "cell_pos": { "x": 1, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  },
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Описание ключевых целей",
+                    "cell_pos": { "x": 3, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-03T11:30:00Z"
+            },
+            {
+              "versionID": "version_3",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_a1b2c3",
+                  "title": "Главный баннер",
+                  "notes": "Финальная версия первого слайда с логотипами."
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Стратегия на Q4: Захват рынка",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "IMAGE",
+                    "text": "Hero Image",
+                    "cell_pos": { "x": 1, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  },
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Описание ключевых целей",
+                    "cell_pos": { "x": 3, "y": 2 },
+                    "span": { "x": 2, "y": 1 }
+                  },
+                  {
+                    "type": "IMAGE",
+                    "text": "Логотипы партнеров",
+                    "cell_pos": { "x": 3, "y": 3 },
+                    "span": { "x": 2, "y": 1 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-03T12:00:00Z"
+            }
+          ],
+          "state": {
+            "selectedVersionID": "version_3",
+            "inPresentation": true
+          }
+        },
+        {
+          "slideID": "slide_001_2",
+          "order": 2,
+          "versions": [
+            {
+              "versionID": "version_1",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_d4e5f6",
+                  "title": "Бюджет кампании",
+                  "notes": null
+                },
+                "objects": [
+                  {
+                    "type": "PIE_CHART",
+                    "text": "Распределение бюджета",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 3 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-03T13:00:00Z"
+            },
+            {
+              "versionID": "version_2",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_d4e5f6",
+                  "title": "Бюджет кампании",
+                  "notes": "График уменьшен, добавлен заголовок."
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Бюджет на рекламу",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "PIE_CHART",
+                    "text": "Распределение бюджета",
+                    "cell_pos": { "x": 1, "y": 2 },
+                    "span": { "x": 4, "y": 2 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-03T13:15:00Z"
+            },
+            {
+              "versionID": "version_3",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_d4e5f6",
+                  "title": "Бюджет кампании",
+                  "notes": "Разделение на график и таблицу."
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Бюджет на рекламу",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "PIE_CHART",
+                    "text": "Распределение бюджета",
+                    "cell_pos": { "x": 1, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  },
+                  {
+                    "type": "TABLE",
+                    "text": "Детализация затрат",
+                    "cell_pos": { "x": 3, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-03T13:45:00Z"
+            },
+            {
+              "versionID": "version_4",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_d4e5f6",
+                  "title": "Бюджет кампании",
+                  "notes": "Добавлен вывод (call to action)."
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Бюджет на рекламу",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "PIE_CHART",
+                    "text": "Распределение бюджета",
+                    "cell_pos": { "x": 1, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  },
+                  {
+                    "type": "TABLE",
+                    "text": "Детализация затрат",
+                    "cell_pos": { "x": 3, "y": 2 },
+                    "span": { "x": 2, "y": 1 }
+                  },
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Итого требуется: $500k",
+                    "cell_pos": { "x": 3, "y": 3 },
+                    "span": { "x": 2, "y": 1 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-03T14:00:00Z"
+            }
+          ],
+          "state": {
+            "selectedVersionID": "version_4",
+            "inPresentation": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "chat_002",
+      "title": "Tech Architecture Redesign",
+      "slides": [
+        {
+          "slideID": "slide_002_1",
+          "order": 1,
+          "versions": [
+            {
+              "versionID": "version_1",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_sys_01",
+                  "title": "Текущая монолитная архитектура",
+                  "notes": null
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Проблемы текущей системы",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "IMAGE",
+                    "text": "Схема монолита",
+                    "cell_pos": { "x": 2, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-01T09:00:00Z"
+            },
+            {
+              "versionID": "version_2",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_sys_01",
+                  "title": "Текущая монолитная архитектура",
+                  "notes": "Схема сдвинута влево, добавлены метрики задержки."
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Проблемы текущей системы",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "IMAGE",
+                    "text": "Схема монолита",
+                    "cell_pos": { "x": 1, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  },
+                  {
+                    "type": "BAR_CHART",
+                    "text": "Задержки API",
+                    "cell_pos": { "x": 3, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-01T10:15:00Z"
+            },
+            {
+              "versionID": "version_3",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_sys_01",
+                  "title": "Текущая монолитная архитектура",
+                  "notes": "Финальная версия с текстом об инцидентах."
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Проблемы текущей системы",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "IMAGE",
+                    "text": "Схема монолита",
+                    "cell_pos": { "x": 1, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  },
+                  {
+                    "type": "BAR_CHART",
+                    "text": "Задержки API",
+                    "cell_pos": { "x": 3, "y": 2 },
+                    "span": { "x": 2, "y": 1 }
+                  },
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "5 инцидентов за месяц",
+                    "cell_pos": { "x": 3, "y": 3 },
+                    "span": { "x": 2, "y": 1 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-01T11:00:00Z"
+            }
+          ],
+          "state": {
+            "selectedVersionID": "version_3",
+            "inPresentation": false
+          }
+        },
+        {
+          "slideID": "slide_002_2",
+          "order": 2,
+          "versions": [
+            {
+              "versionID": "version_1",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_sys_02",
+                  "title": "Переход на микросервисы",
+                  "notes": "Эскиз схемы."
+                },
+                "objects": [
+                  {
+                    "type": "IMAGE",
+                    "text": "Микросервисная архитектура",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 3 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-02T14:00:00Z"
+            },
+            {
+              "versionID": "version_2",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_sys_02",
+                  "title": "Переход на микросервисы",
+                  "notes": "Добавлен заголовок."
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "План миграции",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "IMAGE",
+                    "text": "Микросервисная архитектура",
+                    "cell_pos": { "x": 1, "y": 2 },
+                    "span": { "x": 4, "y": 2 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-02T15:20:00Z"
+            },
+            {
+              "versionID": "version_3",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_sys_02",
+                  "title": "Переход на микросервисы",
+                  "notes": "Включен таймлайн."
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "План миграции",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "IMAGE",
+                    "text": "Микросервисная архитектура",
+                    "cell_pos": { "x": 1, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  },
+                  {
+                    "type": "GANTT_CHART",
+                    "text": "Таймлайн на полгода",
+                    "cell_pos": { "x": 3, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-02T16:00:00Z"
+            }
+          ],
+          "state": {
+            "selectedVersionID": "version_3",
+            "inPresentation": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "chat_003",
+      "title": "User Research Findings",
+      "slides": [
+        {
+          "slideID": "slide_003_1",
+          "order": 1,
+          "versions": [
+            {
+              "versionID": "version_1",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_usr_001",
+                  "title": "Демография респондентов",
+                  "notes": null
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Кто участвовал в опросе",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "TABLE",
+                    "text": "Список сегментов",
+                    "cell_pos": { "x": 1, "y": 2 },
+                    "span": { "x": 4, "y": 2 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-03T08:00:00Z"
+            },
+            {
+              "versionID": "version_2",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_usr_001",
+                  "title": "Демография респондентов",
+                  "notes": "Таблица заменена графиком для наглядности."
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Кто участвовал в опросе",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "PIE_CHART",
+                    "text": "Распределение по возрасту",
+                    "cell_pos": { "x": 1, "y": 2 },
+                    "span": { "x": 4, "y": 2 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-03T08:30:00Z"
+            },
+            {
+              "versionID": "version_3",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_usr_001",
+                  "title": "Демография респондентов",
+                  "notes": "Добавлены данные по географии."
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Кто участвовал в опросе",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "PIE_CHART",
+                    "text": "Распределение по возрасту",
+                    "cell_pos": { "x": 1, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  },
+                  {
+                    "type": "IMAGE",
+                    "text": "Карта распределения пользователей",
+                    "cell_pos": { "x": 3, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-03T09:15:00Z"
+            }
+          ],
+          "state": {
+            "selectedVersionID": "version_3",
+            "inPresentation": true
+          }
+        },
+        {
+          "slideID": "slide_003_2",
+          "order": 2,
+          "versions": [
+            {
+              "versionID": "version_1",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_usr_002",
+                  "title": "Основные болевые точки",
+                  "notes": "Черновик со списком проблем."
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Болевые точки",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "1. Медленная загрузка\n2. Сложная навигация",
+                    "cell_pos": { "x": 1, "y": 2 },
+                    "span": { "x": 4, "y": 2 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-03T10:00:00Z"
+            },
+            {
+              "versionID": "version_2",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_usr_002",
+                  "title": "Основные болевые точки",
+                  "notes": "Добавлены цитаты пользователей."
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Болевые точки",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "1. Медленная загрузка\n2. Сложная навигация",
+                    "cell_pos": { "x": 1, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  },
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Цитаты пользователей",
+                    "cell_pos": { "x": 3, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-03T10:45:00Z"
+            },
+            {
+              "versionID": "version_3",
+              "slide": {
+                "meta": {
+                  "slide_id": "sld_usr_002",
+                  "title": "Основные болевые точки",
+                  "notes": "Финальная компоновка с графиком метрики удовлетворенности."
+                },
+                "objects": [
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Болевые точки",
+                    "cell_pos": { "x": 1, "y": 1 },
+                    "span": { "x": 4, "y": 1 }
+                  },
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "1. Медленная загрузка\n2. Сложная навигация",
+                    "cell_pos": { "x": 1, "y": 2 },
+                    "span": { "x": 2, "y": 2 }
+                  },
+                  {
+                    "type": "TEXT_BOX",
+                    "text": "Цитаты пользователей",
+                    "cell_pos": { "x": 3, "y": 2 },
+                    "span": { "x": 2, "y": 1 }
+                  },
+                  {
+                    "type": "LINE_CHART",
+                    "text": "Падение CSAT",
+                    "cell_pos": { "x": 3, "y": 3 },
+                    "span": { "x": 2, "y": 1 }
+                  }
+                ]
+              },
+              "createdAt": "2026-07-03T11:10:00Z"
+            }
+          ],
+          "state": {
+            "selectedVersionID": "version_3",
+            "inPresentation": true
+          }
+        }
+      ]
+    }
+  ]
+}

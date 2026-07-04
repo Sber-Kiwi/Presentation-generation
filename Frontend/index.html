@@ -1,78 +1,11 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <title>Сбер Киви</title>
-    <meta name="application name" content="Sber-Kiwi" />
-    <meta name="author" content="Чиботарь Андрей" />
-    <link rel="stylesheet" type="text/css" href="styles/layout.css" />
-    <link rel="stylesheet" type="text/css" href="styles/style-kiwi-dark.css" />
+    <meta charset="UTF-8" />
+    <title>my-app</title>
   </head>
   <body>
-    <div id="chats">
-      <input type="button" id="new-chat" value="+" />
-      <input type="button" class="chat" value="Чат 1" />
-      <input type="button" class="chat" value="Чат 2" />
-      <input type="button" class="chat" value="Чат 3" />
-    </div>
-    <div id="main">
-      <div id="slide-switcher">
-        <input
-          type="image"
-          src="images/triangle.png"
-          id="move-to-left"
-          name="move-to-left"
-        />
-        <div id="slide">
-          <div id="header">
-            <div>Слайд 1/N</div>
-            <div>
-              <label for="include-slide-checkbox"
-                >Слайд входит в презентацию</label
-              >
-              <input
-                type="checkbox"
-                checked
-                id="include-slide-checkbox"
-                name="include-slide-checkbox"
-              />
-            </div>
-          </div>
-          <div id="draft"></div>
-          <div id="edits">
-            <textarea
-              id="comment"
-              name="comment"
-              placeholder="Поле для правок"
-            ></textarea>
-            <input
-              type="image"
-              src="images/send.png"
-              id="send-edit"
-              name="send-edit"
-            />
-          </div>
-        </div>
-        <input
-          type="image"
-          src="images/triangle.png"
-          id="move-to-right"
-          name="move-to-right"
-        />
-      </div>
-      <div id="versions-and-save">
-        <div id="versions">
-          <input type="button" class="version" value="Версия 1" />
-          <input type="button" class="version" value="Версия 2" />
-          <input type="button" class="version" value="Версия 3" />
-        </div>
-        <input
-          type="submit"
-          id="save"
-          name="save"
-          value="Сохранить презентацию"
-        />
-      </div>
-    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
