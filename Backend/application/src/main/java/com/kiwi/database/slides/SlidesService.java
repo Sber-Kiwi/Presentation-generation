@@ -28,7 +28,7 @@ public class SlidesService {
         return slidesRepository.findByChat(chat);
     }
 
-    public Slides addSlide(Short num, Integer chatId) throws IOException {
+    public Slides addSlide(Short num, Integer chatId) {
         Chats chat = chatsRepository.findById(chatId).orElseThrow(() -> new EntityNotFoundException("Chat not found " + chatId));
 
         Slides slide = new Slides();
