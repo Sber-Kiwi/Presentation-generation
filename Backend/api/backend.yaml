@@ -61,7 +61,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /chats/{chatID}/status:
+  /chats/{chatID}/status/{taskID}:
     get:
       tags:
         - Chat
@@ -74,6 +74,13 @@ paths:
           schema:
             type: string
             example: "chat_123"
+        - name: taskID
+          in: path
+          required: true
+          description: Identifier of chat generation in queue
+          schema:
+            type: string
+            example: "task_111"
       responses:
         '200':
           description: Current generation status
@@ -179,7 +186,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /chats/{chatID}/slides/{slideID}/status:
+  /chats/{chatID}/slides/{slideID}/status/{taskID}:
     get:
       tags:
         - Chat
@@ -199,6 +206,12 @@ paths:
           schema:
             type: string
             example: "slide_777"
+        - name: taskID
+          in: path
+          description: Identifier task of chat generation in database queue
+          schema:
+            type: string
+            example: "task_111"
       responses:
         '200':
           description: Current slide editing status
@@ -239,6 +252,13 @@ paths:
           schema:
             type: string
             example: "slide_777"
+        - name: versionID
+          in: query
+          required: false
+          description: Identifier of the version of the slide.
+          schema:
+            type: string
+            example: "version_341"
       responses:
         '200':
           description: Edited slide
@@ -336,39 +356,17 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - slides
-              properties:
-                slides:
-                  type: array
-                  description: List of slide states to include in the export.
-                  items:
-                    $ref: "#/components/schemas/SlideState"
-                editedSlides:
-                  type: array
-                  description: Slides changed via Drag-and-Drop, provided as full version objects.
-                  items:
-                    type: object
-                    required:
-                      - slideID
-                      - version
-                    properties:
-                      slideID:
-                        type: string
-                        example: "slide_34"
-                        description: Identifier of the slide that was changed.
-                      version:
-                        allOf:
-                          - $ref: "#/components/schemas/SlideVersion"
-                        description: The version to use for this slide in the export.
+              type: array
+              description: List of slide states to include in the export.
+              items:
+                $ref: "#/components/schemas/SlideState"
       responses:
         '202':
           description: Export started
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DownloadStatus"
+                $ref: "#/components/schemas/JobResponse"
         '404':
           description: Chat not found
           content:
@@ -566,17 +564,12 @@ components:
           type: string
           description: Identifier of the chat the job belongs to.
           example: "chat_123"
-        slideID:
-          type:
+        taskID:
+          type: 
             - string
             - "null"
-          description: Identifier of the slide the job applies to, or null if the job applies to the whole chat.
-          example: "slide_777"
-        status:
-          type: string
-          enum: [pending, processing, done, failed]
-          description: Current status of the job.
-          example: "pending"
+          description: Identifier of the task in database for queue.
+          example: "task_111"
 
     ChatStatus:
       type: object
@@ -649,10 +642,6 @@ components:
       type: object
       description: Status of a presentation export job.
       properties:
-        chatID:
-          type: string
-          description: Identifier of the chat the export belongs to.
-          example: "chat_123"
         status:
           type: string
           enum: [pending, processing, done, failed]

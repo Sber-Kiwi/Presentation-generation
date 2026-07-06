@@ -8,7 +8,7 @@ public class ErrorDto {
     private String message;
     private List<FieldError> details;
 
-    private class FieldError {
+    public static class FieldError {
         private String field;
         private String message;
 

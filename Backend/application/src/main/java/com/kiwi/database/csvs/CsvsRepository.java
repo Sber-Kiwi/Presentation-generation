@@ -1,6 +1,6 @@
 package com.kiwi.database.csvs;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CsvsRepository extends CrudRepository<Csvs, Integer> {
+public interface CsvsRepository extends JpaRepository<Csvs, Integer> {
 }

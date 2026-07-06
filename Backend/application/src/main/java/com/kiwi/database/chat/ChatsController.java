@@ -30,7 +30,7 @@ public class ChatsController {
                                          @RequestParam Integer userId,
                                          @RequestParam MultipartFile csvFile
                                          ) throws IOException {
-        Chats saved = chatsService.addChat(title, prompt, userId, csvFile);
+        Chats saved = chatsService.createChat(title, prompt, userId, csvFile);
         return ResponseEntity.ok(saved);
     }
 
