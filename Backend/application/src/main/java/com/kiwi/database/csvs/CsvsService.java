@@ -8,7 +8,7 @@ import java.util.List;
 @Service
 public class CsvsService {
 
-    private CsvsRepository csvsRepository;
+    private final CsvsRepository csvsRepository;
 
     public CsvsService(CsvsRepository csvsRepository) {
         this.csvsRepository = csvsRepository;
