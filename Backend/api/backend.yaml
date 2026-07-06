@@ -61,7 +61,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /chats/{chatID}/status:
+  /chats/{chatID}/status/{taskID}:
     get:
       tags:
         - Chat
@@ -74,6 +74,13 @@ paths:
           schema:
             type: string
             example: "chat_123"
+        - name: taskID
+          in: path
+          required: true
+          description: Identifier of chat generation in queue
+          schema:
+            type: string
+            example: "task_111"
       responses:
         '200':
           description: Current generation status
@@ -179,7 +186,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /chats/{chatID}/slides/{slideID}/status:
+  /chats/{chatID}/slides/{slideID}/status/{taskID}:
     get:
       tags:
         - Chat
@@ -199,6 +206,12 @@ paths:
           schema:
             type: string
             example: "slide_777"
+        - name: taskID
+          in: path
+          description: Identifier task of chat generation in database queue
+          schema:
+            type: string
+            example: "task_111"
       responses:
         '200':
           description: Current slide editing status
@@ -572,6 +585,10 @@ components:
             - "null"
           description: Identifier of the slide the job applies to, or null if the job applies to the whole chat.
           example: "slide_777"
+        taskID:
+          type: string
+          description: Identifier of the task in database for queue.
+          example: "task_111"
         status:
           type: string
           enum: [pending, processing, done, failed]
