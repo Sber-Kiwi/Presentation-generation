@@ -55,9 +55,7 @@ public class EditService {
 
         JobResponseDto jobResponseDto = new JobResponseDto();
         jobResponseDto.setChatID(chatID);
-        jobResponseDto.setSlideID(slideID);
         jobResponseDto.setTaskID(IdUtil.taskId(saved.getTaskID()));
-        jobResponseDto.setStatus(StatusUtil.toApiStatus(saved.getStatus()));
         return jobResponseDto;
     }
 
