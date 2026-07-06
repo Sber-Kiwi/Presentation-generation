@@ -6,4 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TasksRepository extends JpaRepository<Tasks, Integer> {
+
+    Optional<Tasks> findTopByChat_ChatIDAndTypeOrderByTaskIDDesc(Integer chatID, Integer type);
+
 }
