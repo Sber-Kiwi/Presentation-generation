@@ -1,7 +1,9 @@
 package com.kiwi.database.chat;
 
 import com.kiwi.database.csvs.Csvs;
-import com.kiwi.database.user.UserRepository;
+import com.kiwi.database.csvs.CsvsRepository;
+import com.kiwi.database.jsons.JsonsRepository;
+import com.kiwi.database.user.UsersRepository;
 import com.kiwi.database.user.Users;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -16,19 +18,28 @@ import java.util.List;
 public class ChatsService {
 
     private final ChatsRepository chatsRepository;
-    private final UserRepository userRepository;
+    private final UsersRepository usersRepository;
+    private final CsvsRepository csvsRepository;
+    private final JsonsRepository jsonsRepository;
 
-    public ChatsService(ChatsRepository chatsRepository, UserRepository userRepository) {
+    public ChatsService(ChatsRepository chatsRepository, UsersRepository usersRepository,
+                        CsvsRepository csvsRepository, JsonsRepository jsonsRepository) {
         this.chatsRepository = chatsRepository;
-        this.userRepository = userRepository;
+        this.usersRepository = usersRepository;
+        this.csvsRepository = csvsRepository;
+        this.jsonsRepository = jsonsRepository;
     }
 
     public List<Chats> getAllChats() {
         return chatsRepository.findAll();
     }
 
-    public Chats addChat(String title, String prompt, Integer userId, MultipartFile csvFile) throws IOException {
-        Users user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found " + userId));
+    public Chats getChatById(Integer chatId) {
+        return chatsRepository.findById(chatId).orElseThrow(() -> new EntityNotFoundException("Chat not found " + chatId));
+    }
+
+    public Chats createChat(String title, String prompt, Integer userId, MultipartFile csvFile) throws IOException {
+        Users user = usersRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found " + userId));
 
         Chats chat = new Chats();
         chat.setTitle(title);
@@ -43,4 +54,9 @@ public class ChatsService {
         return chatsRepository.save(chat);
     }
 
+    public void deleteChat(Integer chatId) {
+        if(!chatsRepository.existsById(chatId)) {
+            throw new EntityNotFoundException("Chat not found " + chatId);
+        }
+    }
 }
