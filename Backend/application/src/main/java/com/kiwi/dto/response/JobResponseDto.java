@@ -5,6 +5,7 @@ public class JobResponseDto {
     private String chatID;
     private String slideID;
     private String status;
+    private String taskID;
 
     public String getChatID() {
         return chatID;
@@ -28,5 +29,13 @@ public class JobResponseDto {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getTaskID() {
+        return taskID;
+    }
+
+    public void setTaskID(String taskID) {
+        this.taskID = taskID;
     }
 }

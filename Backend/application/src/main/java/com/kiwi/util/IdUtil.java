@@ -14,6 +14,10 @@ public class IdUtil {
         return "version_" + id;
     }
 
+    public static String taskId(Integer id) {
+        return "task_" + id;
+    }
+
     public static Integer parseChatId (String id) {
         return Integer.valueOf(id.replace("chat_", ""));
     }
@@ -25,5 +29,10 @@ public class IdUtil {
     public static Integer parseVersionId(String id) {
         return Integer.valueOf(id.replace("version_", ""));
     }
+
+    public static Integer parseTaskId(String id) {
+        return Integer.valueOf(id.replace("task_", ""));
+    }
+
 
 }

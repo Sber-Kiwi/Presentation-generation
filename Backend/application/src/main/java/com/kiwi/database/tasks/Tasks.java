@@ -15,9 +15,10 @@ public class Tasks {
     private Integer type;
     private String prompt;
     private Integer status;
+    private String errorMessage;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chatID", unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chatID")
     private Chats chat;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -72,15 +73,23 @@ public class Tasks {
         this.version = version;
     }
 
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Tasks tasks = (Tasks) o;
-        return Objects.equals(taskID, tasks.taskID) && Objects.equals(type, tasks.type) && Objects.equals(prompt, tasks.prompt) && Objects.equals(status, tasks.status) && Objects.equals(chat, tasks.chat) && Objects.equals(version, tasks.version);
+        return Objects.equals(taskID, tasks.taskID) && Objects.equals(type, tasks.type) && Objects.equals(prompt, tasks.prompt) && Objects.equals(status, tasks.status) && Objects.equals(errorMessage, tasks.errorMessage) && Objects.equals(chat, tasks.chat) && Objects.equals(version, tasks.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(taskID, type, prompt, status, chat, version);
+        return Objects.hash(taskID, type, prompt, status, errorMessage, chat, version);
     }
 }
