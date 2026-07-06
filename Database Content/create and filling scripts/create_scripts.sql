@@ -60,8 +60,9 @@ CREATE TABLE tasks (
     versionID      INT REFERENCES versions(versionID) ON DELETE CASCADE,
     type           INT NOT NULL,
     prompt         VARCHAR(500) NOT NULL,
-    status         INT DEFAULT 0 NOT NULL,           -- 0 - новая, 1 - в работе, 2 - завершена
+    status         INT DEFAULT 0 NOT NULL,           -- 0 - новая, 1 - в работе, 2 - завершена, 3 -- завершена с ошибкой
+    error_message  VARCHAR(100) DEFAULT NULL,
 
-    CONSTRAINT chk_task_status CHECK (status BETWEEN 0 AND 2),
+    CONSTRAINT chk_task_status CHECK (status BETWEEN 0 AND 3),
     CONSTRAINT chk_task_prompt CHECK (char_length(trim(prompt)) > 0)
 );
