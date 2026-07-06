@@ -112,16 +112,23 @@ def populate_database():
         for chat_id in chat_ids:
             chat_versions = versions_by_chat[chat_id]
             
-            # chats:tasks 1:1
-            selected_version = random.choice(chat_versions) 
+            num_tasks = random.randint(2, 5)
             
-            status = random.randint(0, 2)
-            task_type = random.randint(1, 2)
-            
-            cur.execute("""
-                INSERT INTO tasks (chatID, versionID, type, prompt, status) 
-                VALUES (%s, %s, %s, %s, %s);
-            """, (chat_id, selected_version, task_type, f"Обработать версию {selected_version} для чата {chat_id}", status))
+            for i in range(num_tasks):
+                status = random.randint(0, 2)
+                task_type = random.randint(1, 3)
+                
+                if random.random() < 0.3:
+                    ver_id = None
+                    prompt_text = f"Задача для чата {chat_id}"
+                else:
+                    ver_id = random.choice(chat_versions)
+                    prompt_text = f"Обработать версию {ver_id} для чата {chat_id}"
+                
+                cur.execute("""
+                    INSERT INTO tasks (chatID, versionID, type, prompt, status) 
+                    VALUES (%s, %s, %s, %s, %s);
+                """, (chat_id, ver_id, task_type, prompt_text, status))
 
         conn.commit()
 
