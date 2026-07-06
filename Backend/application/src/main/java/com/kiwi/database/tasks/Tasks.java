@@ -1,6 +1,7 @@
 package com.kiwi.database.tasks;
 
 import com.kiwi.database.chat.Chats;
+import com.kiwi.database.slides.Slides;
 import com.kiwi.database.versions.Versions;
 import jakarta.persistence.*;
 
@@ -24,6 +25,10 @@ public class Tasks {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "versionID", nullable = true)
     private Versions version;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "slideID", nullable = true)
+    private Slides slide;
 
     public Integer getTaskID() {
         return taskID;
