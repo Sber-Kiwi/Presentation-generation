@@ -2,7 +2,12 @@ package com.kiwi.service;
 
 import com.kiwi.database.chat.Chats;
 import com.kiwi.database.chat.ChatsRepository;
+import com.kiwi.database.csvs.Csvs;
 import com.kiwi.database.slides.Slides;
+import com.kiwi.database.tasks.Tasks;
+import com.kiwi.database.tasks.TasksRepository;
+import com.kiwi.database.user.Users;
+import com.kiwi.database.user.UsersRepository;
 import com.kiwi.database.versions.Versions;
 import com.kiwi.dto.request.SlideStateDto;
 import com.kiwi.dto.request.SlideVersionDto;
@@ -14,8 +19,10 @@ import com.kiwi.dto.response.SlideDto;
 import com.kiwi.exception.NotFoundException;
 import com.kiwi.util.IdUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 
@@ -23,10 +30,14 @@ import java.util.List;
 public class ChatService {
 
     private final ChatsRepository chatsRepository;
+    private final UsersRepository usersRepository;
+    private final TasksRepository tasksRepository;
     private final ObjectMapper objectMapper;
 
-    public ChatService(ChatsRepository chatsRepository, ObjectMapper objectMapper) {
+    public ChatService(ChatsRepository chatsRepository, UsersRepository usersRepository, TasksRepository tasksRepository, ObjectMapper objectMapper) {
         this.chatsRepository = chatsRepository;
+        this.usersRepository = usersRepository;
+        this.tasksRepository = tasksRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -43,9 +54,40 @@ public class ChatService {
         return toDto(chat);
     }
 
+    @Transactional
     public JobResponseDto createChat(StartQueryDto startQueryDto) {
-        // TODO: realize python agent
-        throw new UnsupportedOperationException("Not supported yet!");
+        Csvs csv = new Csvs();
+        try {
+            byte[] fileBytes = startQueryDto.getTable().getBytes();
+            csv.setFile(fileBytes);
+        } catch (IOException e) {
+            csv.setFile(null);
+        }
+
+        Users user;
+        user = usersRepository.findById(1).
+                orElseThrow(() -> new NotFoundException("User not found"));
+
+        Chats chat = new Chats();
+        chat.setCsv(csv);
+        chat.setUser(user);
+        chat.setPrompt(startQueryDto.getPrompt());
+        chat.setTitle("Untitled");
+        Chats savedChat = chatsRepository.save(chat);
+
+        Tasks task = new Tasks();
+        task.setChat(chat);
+        task.setType(0);
+        task.setStatus(0);
+        task.setPrompt(startQueryDto.getPrompt());
+        Tasks savedTask = tasksRepository.save(task);
+
+        JobResponseDto jobResponseDto = new JobResponseDto();
+        jobResponseDto.setChatID(IdUtil.chatId(savedChat.getChatID()));
+        jobResponseDto.setTaskID(IdUtil.taskId(savedTask.getTaskID()));
+
+        return jobResponseDto;
+
     }
 
     private ChatDto toDto(Chats chat) {
