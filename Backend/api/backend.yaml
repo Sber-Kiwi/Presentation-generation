@@ -565,7 +565,9 @@ components:
           description: Identifier of the chat the job belongs to.
           example: "chat_123"
         taskID:
-          type: string
+          type: 
+            - string
+            - "null"
           description: Identifier of the task in database for queue.
           example: "task_111"
 
