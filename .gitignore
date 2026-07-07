@@ -1,5 +1,6 @@
 # Ignore env file
 .env
+.dev_cache
 
 # Jupiter Notebooks
 Notebook
