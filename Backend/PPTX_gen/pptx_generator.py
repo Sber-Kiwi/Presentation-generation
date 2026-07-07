@@ -1,3 +1,11 @@
+"""
+основной класс - PptxBuilder. При создании экземпляра получает два параметра:
+1) путь до исходного json
+2) путь куда сохранять результат (с указанием формата)
+
+сейчас забито внизу условно входной "test_data.json", выходной "output.pptx" 
+"""
+
 import json
 import re
 
@@ -5,7 +13,7 @@ from lxml import etree
 from pptx.oxml.ns import qn
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
-from pptx.enum.chart import XL_CHART_TYPE
+from pptx.enum.chart import XL_CHART_TYPE, XL_LABEL_POSITION, XL_LEGEND_POSITION
 from pptx.chart.data import CategoryChartData
 from pptx.dml.color import RGBColor
 from pptx.text.text import _Run
@@ -63,7 +71,8 @@ DEFAULT_SERIES_PALETTE = [
 ]
 
 # Фиксированные цвета для Waterfall (не зависят от данных)
-WATERFALL_TOTAL_COLOR = RGBColor(0x1E, 0x27, 0x61)   # START / END
+# WATERFALL_TOTAL_COLOR = RGBColor(0x1E, 0x27, 0x61)   # START / END
+WATERFALL_TOTAL_COLOR = RGBColor(0xFF, 0x98, 0x00)
 WATERFALL_INC_COLOR = RGBColor(0x4C, 0xAF, 0x50)     # delta > 0
 WATERFALL_DEC_COLOR = RGBColor(0xF4, 0x43, 0x36)     # delta < 0
 
@@ -417,7 +426,14 @@ class PptxBuilder:
             XL_CHART_TYPE.COLUMN_CLUSTERED, left, top, width, height, chart_data
         ).chart
 
-        chart.has_legend = True
+
+        chart.has_title = True
+        chart.chart_title.text_frame.text = data.get('title', '')
+
+        chart.has_legend = False     #ВРЕМЕННО ВЫКЛЮЧИЛ, Я ПОДУМАЛ И МНЕ КАЖЕТСЯ ЛЕГЕНДА В bar НЕ НУЖНА
+        # chart.legend.position = XL_LEGEND_POSITION.BOTTOM
+        # chart.legend.include_in_layout = False
+        # chart.legend.font.size = Pt(9)
 
         plot = chart.plots[0]
         plot.has_data_labels = True
@@ -445,7 +461,13 @@ class PptxBuilder:
             XL_CHART_TYPE.PIE, left, top, width, height, chart_data
         ).chart
 
+        chart.has_title = True
+        chart.chart_title.text_frame.text = data.get('title', '')
+
         chart.has_legend = True
+        chart.legend.position = XL_LEGEND_POSITION.BOTTOM
+        chart.legend.include_in_layout = False
+        chart.legend.font.size = Pt(9)
 
         plot = chart.plots[0]
         plot.has_data_labels = True
@@ -479,13 +501,24 @@ class PptxBuilder:
         chart_width = int(width * 0.6)
         table_width = width - chart_width - gap
 
+        # Порядок отображения на графике: START всегда первый, END всегда
+        # последний, COMMON - между ними в исходном порядке. Нумерация же
+        # (для сопоставления с таблицей комментариев) берётся из исходного
+        # порядка items, а не из порядка отображения на графике.
+        type_order = {"START": 0, "COMMON": 1, "END": 2}
+        display_items = sorted(
+            enumerate(items),
+            key=lambda pair: type_order.get(pair[1]["type"], 1),
+        )
+
         categories, base_vals, inc_vals, dec_vals, total_vals = [], [], [], [], []
         running_total = 0
         start_delta = None
         end_delta = None
 
-        for item in items:
-            categories.append(item["name"])
+        for orig_idx, item in display_items:
+            # Номер в подписи категории соответствует номеру строки в таблице.
+            categories.append(f"{orig_idx + 1}. {item['name']}")
             item_type = item["type"]
             plan = item["plan"]
             delta = item["delta"]
@@ -539,7 +572,7 @@ class PptxBuilder:
         chart.value_axis.tick_labels.number_format_is_linked = False
         chart.category_axis.tick_labels.font.size = Pt(10)
         chart.has_legend = False
-        chart.has_title = False  # заголовок блока рисуется на уровне выше
+        chart.has_title = False     # заголовок блока рисуется на уровне выше
 
         plot = chart.plots[0]
         plot.gap_width = 30
@@ -561,61 +594,98 @@ class PptxBuilder:
         total_series.format.fill.fore_color.rgb = WATERFALL_TOTAL_COLOR
         total_series.format.line.fill.background()
 
-        
-        for s in (inc_series, dec_series, total_series):
-            s.data_labels.show_value = True
-            s.data_labels.font.size = Pt(10)
-            s.data_labels.number_format = "#,##0"
-            s.data_labels.number_format_is_linked = False
+        # Отключаем автоматические подписи на уровне ряда - расставляем
+        # их вручную только там, где они нужны.
+        for s in (base_series, inc_series, dec_series, total_series):
+            s.data_labels.show_value = False
+            s.data_labels.show_legend_key = False
+            s.data_labels.show_category_name = False
+            s.data_labels.show_series_name = False
+            s.data_labels.show_percentage = False
+            s.data_labels.show_bubble_size = False
 
-        # Жирным подписи итоговых столбцов (START / END)
-        for idx, item in enumerate(items):
+        def _set_point_label(series, idx, value, bold=False, position=None, prefix=""):
+            point = series.points[idx]
+            dl = point.data_label
+            dl.has_text_frame = True
+            if position is not None:
+                dl.position = position
+            tf = dl.text_frame
+            tf.text = f"{prefix}{format_number(value)}"
+            p = tf.paragraphs[0]
+            p.font.size = Pt(10)
+            p.font.bold = bold
+            p.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
+
+        # Индекс точки в сериях теперь соответствует порядку display_items
+        # (позиции на графике), а не исходному индексу в items.
+        for display_idx, (orig_idx, item) in enumerate(display_items):
             if item["type"] in ("START", "END"):
-                total_series.points[idx].data_label.font.bold = True
+                if total_vals[display_idx]:
+                    _set_point_label(
+                        total_series, display_idx, total_vals[display_idx],
+                        bold=True, position=XL_LABEL_POSITION.INSIDE_END,
+                    )
+            else:
+                delta_value = inc_vals[display_idx] if inc_vals[display_idx] else dec_vals[display_idx]
+                if delta_value:
+                    sign = "-" if dec_vals[display_idx] else ""
+                    _set_point_label(
+                        base_series, display_idx, delta_value,
+                        bold=False, position=XL_LABEL_POSITION.INSIDE_END,
+                        prefix=sign,
+                    )
 
-        # -- таблица комментариев справа: № + текст --
-        table_left = left + chart_width + gap
-        n_items = len(items)
+        # таблица комментариев справа: № + текст
+        visible_rows = [
+            (i, item) for i, item in enumerate(items)
+            if (item.get("text") or "").strip()
+        ]
+        n_rows = len(visible_rows)
 
-        table_shape = slide.shapes.add_table(
-            n_items, 2,
-            table_left, body_top, table_width, body_height,
-        )
-        table = table_shape.table
-        table.first_row = False
-        table.first_col = False
-        table.horz_banding = False
-        num_col_w = self._w_emu(TABLE_NUM_COL_W)
-        table.columns[0].width = Emu(num_col_w)
-        table.columns[1].width = Emu(max(table_width - num_col_w, num_col_w))
+        if n_rows:
+            table_left = left + chart_width + gap
 
-        row_height = Emu(int(body_height / n_items))
-        for row in table.rows:
-            row.height = row_height
+            table_shape = slide.shapes.add_table(
+                n_rows, 2,
+                table_left, body_top, table_width, body_height,
+            )
+            table = table_shape.table
+            table.first_row = False
+            table.first_col = False
+            table.horz_banding = False
+            num_col_w = self._w_emu(TABLE_NUM_COL_W)
+            table.columns[0].width = Emu(num_col_w)
+            table.columns[1].width = Emu(max(table_width - num_col_w, num_col_w))
 
-        for i, item in enumerate(items):
-            is_total_row = item["type"] in ("START", "END")
-            fill_color = RGBColor(0xE7, 0xEC, 0xF5) if is_total_row else RGBColor(0xFF, 0xFF, 0xFF)
+            row_height = Emu(int(body_height / n_rows))
+            for row in table.rows:
+                row.height = row_height
 
-            num_cell = table.cell(i, 0)
-            num_cell.text = str(i + 1)
-            num_cell.fill.solid()
-            num_cell.fill.fore_color.rgb = fill_color
-            num_p = num_cell.text_frame.paragraphs[0]
-            num_p.font.size = Pt(10)
-            num_p.font.bold = is_total_row
-            num_p.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
+            for row_idx, (orig_idx, item) in enumerate(visible_rows):
+                is_total_row = item["type"] in ("START", "END")
+                fill_color = RGBColor(0xE7, 0xEC, 0xF5) if is_total_row else RGBColor(0xFF, 0xFF, 0xFF)
 
-            text_cell = table.cell(i, 1)
-            text_cell.text = (item.get("text") or "").strip()
-            text_cell.fill.solid()
-            text_cell.fill.fore_color.rgb = fill_color
-            text_p = text_cell.text_frame.paragraphs[0]
-            text_p.font.size = Pt(10)
-            text_p.font.bold = is_total_row
-            text_p.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
+                num_cell = table.cell(row_idx, 0)
+                num_cell.text = str(orig_idx + 1)
+                num_cell.fill.solid()
+                num_cell.fill.fore_color.rgb = fill_color
+                num_p = num_cell.text_frame.paragraphs[0]
+                num_p.font.size = Pt(10)
+                num_p.font.bold = is_total_row
+                num_p.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
 
-        # -- итоговая строка с общим изменением (delta START == delta END) --
+                text_cell = table.cell(row_idx, 1)
+                text_cell.text = item["text"].strip()
+                text_cell.fill.solid()
+                text_cell.fill.fore_color.rgb = fill_color
+                text_p = text_cell.text_frame.paragraphs[0]
+                text_p.font.size = Pt(10)
+                text_p.font.bold = is_total_row
+                text_p.font.color.rgb = RGBColor(0x00, 0x00, 0x00)
+
+
+        # итоговая строка с общим изменением (delta START == delta END)
         if total_h > 0:
             total_delta = start_delta if start_delta is not None else end_delta
             if total_delta is not None:
@@ -628,10 +698,10 @@ class PptxBuilder:
                 )
                 p = total_box.text_frame.paragraphs[0]
                 p.text = total_text
-                p.font.size = Pt(14)
+                p.font.size = Pt(24)
                 p.font.bold = True
 
 
 if __name__ == "__main__":
-    builder = PptxBuilder("test_data.json", "output.pptx")
+    builder = PptxBuilder("test_data_new.json", "output.pptx")
     builder.build()
