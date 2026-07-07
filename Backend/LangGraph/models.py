@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Annotated
+from typing import Annotated, Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -9,6 +9,8 @@ HORIZONTAL_SIZE = 4
 SlideNum = int
 SlideVersion = int
 UserChangePrompt = str
+
+Json = Annotated[dict, "This is a dict representing json"]
 
 
 class PresentationNameAndMetricsList(BaseModel):
@@ -98,4 +100,3 @@ class DraftSlide(BaseModel):
     )
 
 
-Json = Annotated[dict, "This is a dict representing json"]

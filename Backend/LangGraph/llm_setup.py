@@ -1,6 +1,5 @@
 from settings import WORKERS_POOL_SIZE, simple_llm, thinking_llm
 from tools import data_tools, slide_tools
-from models import PresentationNameAndMetricsList, PromptList, DraftSlide
 
 llm_with_data_tools = thinking_llm.bind_tools(data_tools)
 llm_with_edit_tools = thinking_llm.bind_tools(slide_tools)

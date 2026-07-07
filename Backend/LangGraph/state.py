@@ -1,16 +1,15 @@
+import operator
 from typing import Annotated, Sequence, TypedDict
+
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
-from models import PromptList
+from models import DraftSlide, Json, PromptList, PromptSlide, UserChangePrompt
 
 
 def merge_indexed_dict(current: dict, update: dict) -> dict:
     merged = dict(current)
     merged.update(update)
     return merged
-
-
-json = Annotated[dict, "This is a dict representing json"]
 
 
 class MetricsAgentState(TypedDict):
@@ -25,7 +24,7 @@ class PromptAgentState(TypedDict):
     presentation_name: str
     metrics: list[str]
 
-    prompt_gen_idx: Annotated[dict[int, int], merge_indexed_dict]
+    tasks: list[tuple[int, str]]
 
     prompts: Annotated[dict[int, PromptList], merge_indexed_dict]
     flat_prompts: PromptList  # Transitions to DraftAgentState
@@ -34,9 +33,20 @@ class PromptAgentState(TypedDict):
 class DraftAgentState(TypedDict):
     flat_prompts: PromptList
 
-    json_gen_idx: Annotated[dict[int, int], merge_indexed_dict]
+    tasks: list[tuple[int, PromptSlide]]
+    draft_slides: Annotated[
+        dict[int, Annotated[list[Json], operator.add]], merge_indexed_dict
+    ]  # Transitions to FinalJsonState (but flat without versions)
 
-    draft_slides: Annotated[dict[int, json], merge_indexed_dict]
+
+class EditAgentState(TypedDict):
+    messages: Annotated[Sequence[BaseMessage], add_messages]
+
+    slide_changed: bool
+
+    change_prompt: UserChangePrompt
+    current_slide: DraftSlide
+    slide_versions: list[DraftSlide]
 
 
 class OverallState(TypedDict):
@@ -44,4 +54,4 @@ class OverallState(TypedDict):
     presentation_name: str
     metrics: list[str]
     flat_prompts: PromptList
-    draft_slides: dict[int, json]
+    draft_slides: Annotated[dict[int, list[Json]], merge_indexed_dict]
