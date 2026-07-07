@@ -1,5 +1,6 @@
 package com.kiwi.service;
 
+import com.kiwi.agent.AgentService;
 import com.kiwi.database.chat.Chats;
 import com.kiwi.database.chat.ChatsRepository;
 import com.kiwi.database.slides.Slides;
@@ -22,15 +23,17 @@ public class EditService {
     private final SlidesRepository slidesRepository;
     private final VersionsRepository versionsRepository;
     private final TasksRepository tasksRepository;
+    private final AgentService agentService;
 
     public EditService(ChatsRepository chatsRepository,
                        SlidesRepository slidesRepository,
                        VersionsRepository versionsRepository,
-                       TasksRepository tasksRepository) {
+                       TasksRepository tasksRepository, AgentService agentService) {
         this.chatsRepository = chatsRepository;
         this.slidesRepository = slidesRepository;
         this.versionsRepository = versionsRepository;
         this.tasksRepository = tasksRepository;
+        this.agentService = agentService;
     }
 
     public JobResponseDto createEdit(String chatID, String slideID, EditQueryDto editQueryDto) {
@@ -51,7 +54,7 @@ public class EditService {
         task.setType(1);
         Tasks saved = tasksRepository.save(task);
 
-        // TODO: put python agent to queue
+        agentService.runTask(saved.getTaskID());
 
         JobResponseDto jobResponseDto = new JobResponseDto();
         jobResponseDto.setChatID(chatID);

@@ -1,5 +1,6 @@
 package com.kiwi.service;
 
+import com.kiwi.agent.AgentService;
 import com.kiwi.database.chat.Chats;
 import com.kiwi.database.chat.ChatsRepository;
 import com.kiwi.database.csvs.Csvs;
@@ -32,12 +33,14 @@ public class ChatService {
     private final ChatsRepository chatsRepository;
     private final UsersRepository usersRepository;
     private final TasksRepository tasksRepository;
+    private final AgentService agentService;
     private final ObjectMapper objectMapper;
 
-    public ChatService(ChatsRepository chatsRepository, UsersRepository usersRepository, TasksRepository tasksRepository, ObjectMapper objectMapper) {
+    public ChatService(ChatsRepository chatsRepository, UsersRepository usersRepository, TasksRepository tasksRepository, AgentService agentService, ObjectMapper objectMapper) {
         this.chatsRepository = chatsRepository;
         this.usersRepository = usersRepository;
         this.tasksRepository = tasksRepository;
+        this.agentService = agentService;
         this.objectMapper = objectMapper;
     }
 
@@ -81,6 +84,9 @@ public class ChatService {
         task.setStatus(0);
         task.setPrompt(startQueryDto.getPrompt());
         Tasks savedTask = tasksRepository.save(task);
+
+        agentService.runTask(savedTask.getTaskID());
+
 
         JobResponseDto jobResponseDto = new JobResponseDto();
         jobResponseDto.setChatID(IdUtil.chatId(savedChat.getChatID()));
