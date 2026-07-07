@@ -9,7 +9,5 @@ import java.util.List;
 public interface VersionsRepository extends JpaRepository<Versions, Integer> {
     List<Versions> findBySlide(Slides slide);
 
-    List<Versions> findByChat(Chats chat);
-
     List<Versions> findBySlide_Chat_ChatIDAndIsFinalTrue (Integer chatId);
 }

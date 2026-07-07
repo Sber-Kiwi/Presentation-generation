@@ -27,10 +27,6 @@ public class VersionsService {
         return versionsRepository.findBySlide(slide);
     }
 
-    public List<Versions> getVersionsByChat(Chats chat) {
-        return versionsRepository.findByChat(chat);
-    }
-
     public List<Versions> getFinalVersions(Integer chatId) {
         return versionsRepository.findBySlide_Chat_ChatIDAndIsFinalTrue(chatId);
     }

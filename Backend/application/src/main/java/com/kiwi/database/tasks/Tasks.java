@@ -26,10 +26,6 @@ public class Tasks {
     @JoinColumn(name = "versionID", nullable = true)
     private Versions version;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "slideID", nullable = true)
-    private Slides slide;
-
     public Integer getTaskID() {
         return taskID;
     }
