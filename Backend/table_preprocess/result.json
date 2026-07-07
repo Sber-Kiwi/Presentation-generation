@@ -1,0 +1,463 @@
+{
+  "summary": {
+    "total_rows": 45,
+    "unique_periods": [
+      "Январь 25",
+      "Февраль 25",
+      "Март 25"
+    ],
+    "num_periods": 3,
+    "unique_federal_districts": [
+      "Северо-Западный ФО"
+    ],
+    "unique_subjects": [
+      "Мурманская обл.",
+      "Архангельская обл.",
+      "Республика Карелия"
+    ],
+    "unique_metrics": [
+      "Доход банка",
+      "Средний тариф банка",
+      "Объем транзакций",
+      "Средняя стоимость обеда",
+      "Количество клиентов",
+      "Общее количество людей в ВУЗе",
+      "Доля людей питающихся в столовой",
+      "Студенты",
+      "Административный персонал"
+    ],
+    "unique_units": [
+      "Руб.",
+      "%",
+      "Кл."
+    ],
+    "is_multi_period": true,
+    "is_multi_region": true,
+    "is_multi_metric": true
+  },
+  "metrics": {
+    "Доход банка": {
+      "name": "Доход банка",
+      "unit": "Руб.",
+      "total_rows": 5,
+      "num_periods": 3,
+      "periods": [
+        "Январь 25",
+        "Февраль 25",
+        "Март 25"
+      ],
+      "num_subjects": 3,
+      "subjects": [
+        "Мурманская обл.",
+        "Архангельская обл.",
+        "Республика Карелия"
+      ],
+      "num_federal_districts": 1,
+      "federal_districts": [
+        "Северо-Западный ФО"
+      ],
+      "has_negative": false,
+      "value_stats": {
+        "count": 5,
+        "min": 15230.5,
+        "max": 35810.4,
+        "mean": 27332.52,
+        "sum": 136662.6,
+        "std": 8797.2821
+      },
+      "chart_flags": {
+        "line": true,
+        "bar": true,
+        "pie": true,
+        "table": true
+      },
+      "pie_details": {
+        "reference_period": "Январь 25",
+        "num_categories": 3
+      },
+      "table_details": {
+        "rows": 5,
+        "recommend_pagination_or_aggregation": false
+      },
+      "notes": [
+        "Для line-графика по времени данные есть по нескольким субъектам РФ - перед построением стоит зафиксировать один субъект/округ либо агрегировать (сумма/среднее)."
+      ]
+    },
+    "Средний тариф банка": {
+      "name": "Средний тариф банка",
+      "unit": "%",
+      "total_rows": 5,
+      "num_periods": 3,
+      "periods": [
+        "Январь 25",
+        "Февраль 25",
+        "Март 25"
+      ],
+      "num_subjects": 3,
+      "subjects": [
+        "Мурманская обл.",
+        "Архангельская обл.",
+        "Республика Карелия"
+      ],
+      "num_federal_districts": 1,
+      "federal_districts": [
+        "Северо-Западный ФО"
+      ],
+      "has_negative": false,
+      "value_stats": {
+        "count": 5,
+        "min": 4.8,
+        "max": 5.2,
+        "mean": 5.02,
+        "sum": 25.1,
+        "std": 0.1483
+      },
+      "chart_flags": {
+        "line": true,
+        "bar": true,
+        "pie": true,
+        "table": true
+      },
+      "pie_details": {
+        "reference_period": "Январь 25",
+        "num_categories": 3
+      },
+      "table_details": {
+        "rows": 5,
+        "recommend_pagination_or_aggregation": false
+      },
+      "notes": [
+        "Для line-графика по времени данные есть по нескольким субъектам РФ - перед построением стоит зафиксировать один субъект/округ либо агрегировать (сумма/среднее)."
+      ]
+    },
+    "Объем транзакций": {
+      "name": "Объем транзакций",
+      "unit": "Руб.",
+      "total_rows": 5,
+      "num_periods": 3,
+      "periods": [
+        "Январь 25",
+        "Февраль 25",
+        "Март 25"
+      ],
+      "num_subjects": 3,
+      "subjects": [
+        "Мурманская обл.",
+        "Архангельская обл.",
+        "Республика Карелия"
+      ],
+      "num_federal_districts": 1,
+      "federal_districts": [
+        "Северо-Западный ФО"
+      ],
+      "has_negative": false,
+      "value_stats": {
+        "count": 5,
+        "min": 301200.0,
+        "max": 701244.0,
+        "mean": 549825.2,
+        "sum": 2749126.0,
+        "std": 168154.3136
+      },
+      "chart_flags": {
+        "line": true,
+        "bar": true,
+        "pie": true,
+        "table": true
+      },
+      "pie_details": {
+        "reference_period": "Январь 25",
+        "num_categories": 3
+      },
+      "table_details": {
+        "rows": 5,
+        "recommend_pagination_or_aggregation": false
+      },
+      "notes": [
+        "Для line-графика по времени данные есть по нескольким субъектам РФ - перед построением стоит зафиксировать один субъект/округ либо агрегировать (сумма/среднее)."
+      ]
+    },
+    "Средняя стоимость обеда": {
+      "name": "Средняя стоимость обеда",
+      "unit": "Руб.",
+      "total_rows": 5,
+      "num_periods": 3,
+      "periods": [
+        "Январь 25",
+        "Февраль 25",
+        "Март 25"
+      ],
+      "num_subjects": 3,
+      "subjects": [
+        "Мурманская обл.",
+        "Архангельская обл.",
+        "Республика Карелия"
+      ],
+      "num_federal_districts": 1,
+      "federal_districts": [
+        "Северо-Западный ФО"
+      ],
+      "has_negative": false,
+      "value_stats": {
+        "count": 5,
+        "min": 255.0,
+        "max": 278.0,
+        "mean": 268.0,
+        "sum": 1340.0,
+        "std": 9.975
+      },
+      "chart_flags": {
+        "line": true,
+        "bar": true,
+        "pie": true,
+        "table": true
+      },
+      "pie_details": {
+        "reference_period": "Январь 25",
+        "num_categories": 3
+      },
+      "table_details": {
+        "rows": 5,
+        "recommend_pagination_or_aggregation": false
+      },
+      "notes": [
+        "Для line-графика по времени данные есть по нескольким субъектам РФ - перед построением стоит зафиксировать один субъект/округ либо агрегировать (сумма/среднее)."
+      ]
+    },
+    "Количество клиентов": {
+      "name": "Количество клиентов",
+      "unit": "Кл.",
+      "total_rows": 5,
+      "num_periods": 3,
+      "periods": [
+        "Январь 25",
+        "Февраль 25",
+        "Март 25"
+      ],
+      "num_subjects": 3,
+      "subjects": [
+        "Мурманская обл.",
+        "Архангельская обл.",
+        "Республика Карелия"
+      ],
+      "num_federal_districts": 1,
+      "federal_districts": [
+        "Северо-Западный ФО"
+      ],
+      "has_negative": false,
+      "value_stats": {
+        "count": 5,
+        "min": 1420.0,
+        "max": 2410.0,
+        "mean": 2054.2,
+        "sum": 10271.0,
+        "std": 426.0847
+      },
+      "chart_flags": {
+        "line": true,
+        "bar": true,
+        "pie": true,
+        "table": true
+      },
+      "pie_details": {
+        "reference_period": "Январь 25",
+        "num_categories": 3
+      },
+      "table_details": {
+        "rows": 5,
+        "recommend_pagination_or_aggregation": false
+      },
+      "notes": [
+        "Для line-графика по времени данные есть по нескольким субъектам РФ - перед построением стоит зафиксировать один субъект/округ либо агрегировать (сумма/среднее)."
+      ]
+    },
+    "Общее количество людей в ВУЗе": {
+      "name": "Общее количество людей в ВУЗе",
+      "unit": "Кл.",
+      "total_rows": 5,
+      "num_periods": 3,
+      "periods": [
+        "Январь 25",
+        "Февраль 25",
+        "Март 25"
+      ],
+      "num_subjects": 3,
+      "subjects": [
+        "Мурманская обл.",
+        "Архангельская обл.",
+        "Республика Карелия"
+      ],
+      "num_federal_districts": 1,
+      "federal_districts": [
+        "Северо-Западный ФО"
+      ],
+      "has_negative": false,
+      "value_stats": {
+        "count": 5,
+        "min": 2100.0,
+        "max": 3440.0,
+        "mean": 3058.0,
+        "sum": 15290.0,
+        "std": 582.6834
+      },
+      "chart_flags": {
+        "line": true,
+        "bar": true,
+        "pie": true,
+        "table": true
+      },
+      "pie_details": {
+        "reference_period": "Январь 25",
+        "num_categories": 3
+      },
+      "table_details": {
+        "rows": 5,
+        "recommend_pagination_or_aggregation": false
+      },
+      "notes": [
+        "Для line-графика по времени данные есть по нескольким субъектам РФ - перед построением стоит зафиксировать один субъект/округ либо агрегировать (сумма/среднее)."
+      ]
+    },
+    "Доля людей питающихся в столовой": {
+      "name": "Доля людей питающихся в столовой",
+      "unit": "%",
+      "total_rows": 5,
+      "num_periods": 3,
+      "periods": [
+        "Январь 25",
+        "Февраль 25",
+        "Март 25"
+      ],
+      "num_subjects": 3,
+      "subjects": [
+        "Мурманская обл.",
+        "Архангельская обл.",
+        "Республика Карелия"
+      ],
+      "num_federal_districts": 1,
+      "federal_districts": [
+        "Северо-Западный ФО"
+      ],
+      "has_negative": false,
+      "value_stats": {
+        "count": 5,
+        "min": 58.0,
+        "max": 69.0,
+        "mean": 64.6,
+        "sum": 323.0,
+        "std": 4.827
+      },
+      "chart_flags": {
+        "line": true,
+        "bar": true,
+        "pie": true,
+        "table": true
+      },
+      "pie_details": {
+        "reference_period": "Январь 25",
+        "num_categories": 3
+      },
+      "table_details": {
+        "rows": 5,
+        "recommend_pagination_or_aggregation": false
+      },
+      "notes": [
+        "Для line-графика по времени данные есть по нескольким субъектам РФ - перед построением стоит зафиксировать один субъект/округ либо агрегировать (сумма/среднее)."
+      ]
+    },
+    "Студенты": {
+      "name": "Студенты",
+      "unit": "Кл.",
+      "total_rows": 5,
+      "num_periods": 3,
+      "periods": [
+        "Январь 25",
+        "Февраль 25",
+        "Март 25"
+      ],
+      "num_subjects": 3,
+      "subjects": [
+        "Мурманская обл.",
+        "Архангельская обл.",
+        "Республика Карелия"
+      ],
+      "num_federal_districts": 1,
+      "federal_districts": [
+        "Северо-Западный ФО"
+      ],
+      "has_negative": false,
+      "value_stats": {
+        "count": 5,
+        "min": 2000.0,
+        "max": 3270.0,
+        "mean": 2915.0,
+        "sum": 14575.0,
+        "std": 552.9467
+      },
+      "chart_flags": {
+        "line": true,
+        "bar": true,
+        "pie": true,
+        "table": true
+      },
+      "pie_details": {
+        "reference_period": "Январь 25",
+        "num_categories": 3
+      },
+      "table_details": {
+        "rows": 5,
+        "recommend_pagination_or_aggregation": false
+      },
+      "notes": [
+        "Для line-графика по времени данные есть по нескольким субъектам РФ - перед построением стоит зафиксировать один субъект/округ либо агрегировать (сумма/среднее)."
+      ]
+    },
+    "Административный персонал": {
+      "name": "Административный персонал",
+      "unit": "Кл.",
+      "total_rows": 5,
+      "num_periods": 3,
+      "periods": [
+        "Январь 25",
+        "Февраль 25",
+        "Март 25"
+      ],
+      "num_subjects": 3,
+      "subjects": [
+        "Мурманская обл.",
+        "Архангельская обл.",
+        "Республика Карелия"
+      ],
+      "num_federal_districts": 1,
+      "federal_districts": [
+        "Северо-Западный ФО"
+      ],
+      "has_negative": false,
+      "value_stats": {
+        "count": 5,
+        "min": 100.0,
+        "max": 170.0,
+        "mean": 143.0,
+        "sum": 715.0,
+        "std": 31.1448
+      },
+      "chart_flags": {
+        "line": true,
+        "bar": true,
+        "pie": true,
+        "table": true
+      },
+      "pie_details": {
+        "reference_period": "Январь 25",
+        "num_categories": 3
+      },
+      "table_details": {
+        "rows": 5,
+        "recommend_pagination_or_aggregation": false
+      },
+      "notes": [
+        "Для line-графика по времени данные есть по нескольким субъектам РФ - перед построением стоит зафиксировать один субъект/округ либо агрегировать (сумма/среднее)."
+      ]
+    }
+  }
+}
