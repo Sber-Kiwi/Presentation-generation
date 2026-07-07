@@ -205,11 +205,17 @@
   grid-template-columns: repeat(4, var(--grid-size));
   gap: 10px;
   position: relative;
-  z-index: -1;
+}
+
+.grid-item-bg {
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  bac
+  z-index: 1;
 }
 
 .grid-item {
-  border: 2px dashed #ccc;
+  z-index: 2;
 }
 
 .edit {

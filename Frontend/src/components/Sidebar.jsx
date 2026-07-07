@@ -7,7 +7,7 @@ export default function Sidebar({
   return (
     <div id="chats" className={`chats ${isOpen ? "" : "collapsed"}`}>
       {chats.map((chat) => {
-        if (chat?.id == "new") {
+        if (chat?.id === "new") {
           return (
             <button
               key={chat.id}

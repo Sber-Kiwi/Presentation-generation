@@ -2,6 +2,7 @@ export default function VersionPanel({
   versions,
   selectedVersionId,
   onSelectVersion,
+  onSave,
 }) {
   return (
     <div id="versions-and-save" className="versions-and-save">
@@ -17,8 +18,8 @@ export default function VersionPanel({
         ))}
       </div>
 
-      <button id="save" className="save" name="save">
-        {`Сохранить\n презентацию`}
+      <button id="save" className="save" name="save" onClick={onSave}>
+        Сохранить <br /> презентацию
       </button>
     </div>
   );
