@@ -1,8 +1,14 @@
 from enum import Enum
-from pydantic import BaseModel, Field, ConfigDict
+from typing import Annotated
+
+from pydantic import BaseModel, ConfigDict, Field
 
 VERTICAL_SIZE = 3
 HORIZONTAL_SIZE = 4
+
+SlideNum = int
+SlideVersion = int
+UserChangePrompt = str
 
 
 class PresentationNameAndMetricsList(BaseModel):
@@ -15,10 +21,20 @@ class PresentationNameAndMetricsList(BaseModel):
     )
 
 
+class PromptSlide(BaseModel):
+    slide_name: str = Field(description="Название слайда (заголовок)")
+    idea: str = Field(
+        description="Основной аналитический тезис, который слайд должен донести до читателя"
+    )
+    contents: str = Field(
+        description=" Перечень объектов на слайде: тип каждого объекта (таблица, график, текст), что именно он отображает, по каким измерениям и периодам"
+    )
+
+
 class PromptList(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    prompts: list[str] = Field(
+    prompts: list[PromptSlide] = Field(
         description="Список промптов для нейронной сети для каждого слайда презентации."
         " Содержит словесное описание содержания слайда."
     )
@@ -80,3 +96,6 @@ class DraftSlide(BaseModel):
     objects: list[SlideItem] = Field(
         description="Список всех объектов -- текста, графиков, таблиц -- на слайде.",
     )
+
+
+Json = Annotated[dict, "This is a dict representing json"]

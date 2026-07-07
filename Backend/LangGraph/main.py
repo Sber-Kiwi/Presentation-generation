@@ -1,11 +1,12 @@
-from duckdb import connect
+import duckdb
+import asyncio
 
 from graph import build_graph, CompiledStateGraph
 import settings
 
 
-def main() -> None:
-    settings.con = connect()
+async def main() -> None:
+    settings.con = duckdb.connect()
     settings.sql_data = settings.con.read_csv("Backend/LangGraph/data/data.csv")
 
     agent: CompiledStateGraph = build_graph()
@@ -22,9 +23,9 @@ def main() -> None:
         "Создай мне презентацию на основе таблицы с данными, которую я тебе передал"
     )
     while user_input != "exit":
-        settings.call_llm(agent, {"start_prompt": user_input})
+        await settings.call_llm(agent, {"start_prompt": user_input})
         user_input = input("Enter: ")
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

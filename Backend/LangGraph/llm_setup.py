@@ -1,19 +1,29 @@
-from langchain_core.runnables import ConfigurableField
-
-from settings import llm
-from tools import tools
-from constants.json_schemas import JSON_SCHEMA_DRAFT
+from settings import WORKERS_POOL_SIZE, simple_llm, thinking_llm
+from tools import data_tools, slide_tools
 from models import PresentationNameAndMetricsList, PromptList, DraftSlide
 
-llm_with_tools = llm.bind_tools(tools)
+llm_with_data_tools = thinking_llm.bind_tools(data_tools)
+llm_with_edit_tools = thinking_llm.bind_tools(slide_tools)
 
-llm = llm.configurable_fields(temperature=ConfigurableField(id="temperature"))
+config_strict = {
+    "configurable": {
+        "temperature": 0.0,
+        "max_tokens": 3000,
+        "max_concurrency": WORKERS_POOL_SIZE,
+    }
+}
+config_creative = {
+    "configurable": {
+        "temperature": 0.5,
+        "max_tokens": 3000,
+        "max_concurrency": WORKERS_POOL_SIZE,
+    }
+}
 
-config_strict = {"configurable": {"temperature": 0.0}}
-config_creative = {"configurable": {"temperature": 1.0}}
+llm_structured_metrics = simple_llm.with_structured_output(
+    PresentationNameAndMetricsList
+)
 
-llm_structured_metrics = llm.with_structured_output(PresentationNameAndMetricsList)
+llm_structured_prompts = thinking_llm.with_structured_output(PromptList)
 
-llm_structured_prompts = llm.with_structured_output(PromptList)
-
-llm_structured_jsons = llm.with_structured_output(DraftSlide)
+llm_structured_drafts = thinking_llm.with_structured_output(DraftSlide)
