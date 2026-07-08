@@ -607,6 +607,10 @@ components:
       type: object
       description: Describes which version of a slide is active and whether it is included in the final presentation.
       properties:
+        slideID:
+          type: string
+          description: Identifier of the slide
+          example: "slide_777"
         selectedVersionID:
           type: string
           description: Identifier of the version currently selected for this slide.
