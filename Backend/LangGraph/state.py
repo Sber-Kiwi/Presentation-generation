@@ -14,6 +14,7 @@ def merge_indexed_dict(current: dict, update: dict) -> dict:
 
 class MetricsAgentState(TypedDict):
     start_prompt: str
+    data_anlyze_result: str
     messages: Annotated[Sequence[BaseMessage], add_messages]
 
     presentation_name: str  # Transitions to PromptAgentState
@@ -23,6 +24,7 @@ class MetricsAgentState(TypedDict):
 class PromptAgentState(TypedDict):
     presentation_name: str
     metrics: list[str]
+    data_anlyze_result: str
 
     tasks: list[tuple[int, str]]
 
@@ -32,6 +34,7 @@ class PromptAgentState(TypedDict):
 
 class DraftAgentState(TypedDict):
     flat_prompts: PromptList
+    data_anlyze_result: str
 
     tasks: list[tuple[int, PromptSlide]]
     draft_slides: Annotated[
@@ -49,9 +52,27 @@ class EditAgentState(TypedDict):
     slide_versions: list[DraftSlide]
 
 
+class FinalJsonTaskState(TypedDict):
+    slide_index: int
+    slide_draft: DraftSlide
+
+    gathered_messages: Sequence[BaseMessage]
+
+    final_slide: Json
+
+
+class FinalJsonState(TypedDict):
+    draft_slides: dict[int, Json]
+
+    tasks: list[FinalJsonTaskState]
+    final_slides: Annotated[dict[int, Json], merge_indexed_dict]
+
+
 class OverallState(TypedDict):
     start_prompt: str
     presentation_name: str
+    data_anlyze_result: str
     metrics: list[str]
     flat_prompts: PromptList
     draft_slides: Annotated[dict[int, list[Json]], merge_indexed_dict]
+    final_slides: Annotated[dict[int, Json], merge_indexed_dict]
