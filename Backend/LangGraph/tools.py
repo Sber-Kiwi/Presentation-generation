@@ -1,24 +1,17 @@
 import re
-import sqlparse
-from typing import Annotated
-from langgraph.prebuilt import InjectedState
-from langgraph.types import Command
-from langchain_core.tools import tool, InjectedToolCallId, BaseTool
-from langchain_core.messages import ToolMessage
 from copy import deepcopy
+from typing import Annotated
 
 import settings
-from models import (
-    HORIZONTAL_SIZE,
-    VERTICAL_SIZE,
-    DraftSlide,
-    ObjectPosition,
-    ObjectType,
-    ObjectSpan,
-    SlideItem,
-)
+import sqlparse
 from constants.mapping import ALLOWED_OBJECT_TRANSFORMATION
+from langchain_core.messages import ToolMessage
+from langchain_core.tools import BaseTool, InjectedToolCallId, tool
+from langgraph.prebuilt import InjectedState
+from langgraph.types import Command
+from models import ObjectPosition, ObjectSpan, ObjectType
 from state import EditAgentState
+from utils import _find_object, _validate_slide_no_collisions
 
 
 @tool
@@ -302,58 +295,6 @@ def change_object_swap(
                 ],
             }
         )
-
-
-def _validate_grid_bounds(pos: ObjectPosition, size: ObjectSpan) -> None:
-    if not (1 <= pos.x <= HORIZONTAL_SIZE and 1 <= pos.y <= VERTICAL_SIZE):
-        raise ValueError(
-            f"Позиция {pos} находится за границами {HORIZONTAL_SIZE}x{VERTICAL_SIZE} решетки"
-        )
-
-    # Position starts from 1, so -1
-    if (
-        pos.x + size.horizontal_span - 1 > HORIZONTAL_SIZE
-        or pos.y + size.vertical_span - 1 > VERTICAL_SIZE
-    ):
-        raise ValueError(
-            f"Объект на позиции {pos} с размером {size} выходит за границы"
-        )
-
-
-def _validate_slide_no_collisions(slide: DraftSlide) -> None:
-    """Проверяет, что ни один объект на слайде не пересекается с другим
-    и не выходит за границы сетки, помечая занятые ячейки сетки.
-    Вызывается ПОСЛЕ применения изменений к копии слайда — если проверка
-    не пройдена, изменения не сохраняются.
-    """
-    occupied: dict[tuple[int, int], SlideItem] = {}
-
-    for obj in slide.objects:
-        _validate_grid_bounds(obj.position, obj.span)
-
-        for dx in range(obj.span.horizontal_span):
-            for dy in range(obj.span.vertical_span):
-                cell = (obj.position.x + dx, obj.position.y + dy)
-
-                if cell in occupied:
-                    other = occupied[cell]
-                    raise ValueError(
-                        f"После применения изменения объект типа '{obj.type}' "
-                        f"(позиция {obj.position}, размер {obj.span}) "
-                        f"пересекается с объектом типа '{other.type}' "
-                        f"(позиция {other.position}, размер {other.span}) "
-                        f"в ячейке {cell}."
-                    )
-
-                occupied[cell] = obj
-
-
-def _find_object(slide: DraftSlide, position: ObjectPosition) -> SlideItem:
-    for obj in slide.objects:
-        if obj.position == position:
-            return obj
-
-    raise ValueError(f"На позиции {position} не был найден объект")
 
 
 data_tools: list[BaseTool] = [sql_query_dataframe]

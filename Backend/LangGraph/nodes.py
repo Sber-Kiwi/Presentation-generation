@@ -8,6 +8,7 @@ from constants.messages import (
     PROMPTS_SYSTEM_MESSAGE,
     SPLIT_INTO_LIST_MESSAGE,
 )
+from csv_preprocessor import analyze, convert_analyze_result_to_message
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.prebuilt import ToolNode
 from langgraph.types import Send
@@ -19,7 +20,7 @@ from llm_setup import (
     llm_structured_prompts,
     llm_with_data_tools,
 )
-from models import PresentationNameAndMetricsList, PromptList
+from models import Json, PresentationNameAndMetricsList, PromptList
 from settings import WORKERS_POOL_SIZE, call_llm, call_llm_sync
 from slide_editing.manager import EditRequestManager
 from state import (
@@ -33,18 +34,22 @@ from tools import data_tools
 from utils import (
     build_promt_message,
     create_draft_json,
+    normalize_draft_slides,
     parse_json_to_draft,
     print_help,
     print_slide,
 )
 
-from Backend.LangGraph.models import Json
-
 semaphore = Semaphore(WORKERS_POOL_SIZE)
 
 
 def setupper(state: MetricsAgentState) -> MetricsAgentState:
-    return state
+    if settings.sql_data is None:
+        raise AttributeError("sql_data not provided, unable to process data")
+
+    analyze_result = analyze(settings.sql_data.to_df())
+
+    return {"data_anlyze_result": convert_analyze_result_to_message(analyze_result)}
 
 
 def data_agent(state: MetricsAgentState) -> dict:
@@ -53,10 +58,11 @@ def data_agent(state: MetricsAgentState) -> dict:
         raise AttributeError("sql_data not provided, unable to process data")
 
     system_message = SystemMessage(content=METRICS_SYSTEM_MESSAGE)
-    data_message = HumanMessage(
-        content=f"""ЗАГОЛОВКИ ТАБЛИЦЫ С ДАННЫМИ: {str(settings.sql_data.columns)}
-ЗАПРОС ПОЛЬЗОВАТЕЛЯ: {state["start_prompt"]}"""
-    )
+    data_message = HumanMessage(content=f"""ЗАПРОС ПОЛЬЗОВАТЕЛЯ: {state["start_prompt"]}
+
+ЗАГОЛОВКИ ТАБЛИЦЫ С ДАННЫМИ: {str(settings.sql_data.columns)}
+
+ВЫБОРКА ВСПОМОГАТЕЛЬНЫХ ДАННЫХ ИЗ ТАБЛИЦЫ: {state['data_anlyze_result']}""")
 
     response = call_llm_sync(
         llm_with_data_tools,
@@ -89,16 +95,20 @@ def prompt_prepare_tasks(state: PromptAgentState) -> dict:
 
 
 async def generate_prompt(state: dict) -> dict:
-    response: PromptList = await call_llm(
-        llm_structured_prompts,
-        [
-            SystemMessage(content=PROMPTS_SYSTEM_MESSAGE),
-            HumanMessage(content=f"ПОКАЗАТЕЛЬ: {state["metric"]}"),
-        ],
-        config=config_creative,
-    )
+    async with semaphore:
+        response: PromptList = await call_llm(
+            llm_structured_prompts,
+            [
+                SystemMessage(content=PROMPTS_SYSTEM_MESSAGE),
+                HumanMessage(
+                    content=f"ПОКАЗАТЕЛЬ: {state["metric"]}\n\n"
+                    f"ВЫБОРКА ВСПОМОГАТЕЛЬНЫХ ДАННЫХ ИЗ ТАБЛИЦЫ: {state['data_anlyze_result']}"
+                ),
+            ],
+            config=config_creative,
+        )
 
-    return {"prompts": {state["idx"]: response}}
+        return {"prompts": {state["idx"]: response}}
 
 
 def combine_prompts(state: PromptAgentState) -> PromptAgentState:
@@ -121,24 +131,32 @@ def draft_prepare_tasks(state: DraftAgentState) -> DraftAgentState:
 
 
 async def generate_draft(state: dict) -> dict:
-    response = await call_llm(
-        llm_structured_drafts,
-        [
-            HumanMessage(content=state["prompt"]),
-            SystemMessage(
-                content=f"{DRAFT_SYSTEM_MESSAGE}\n\n{OBJECT_TYPE_EXPLAIN_MESSAGE}"
-            ),
-        ],
-        config=config_creative,
-    )
+    async with semaphore:
+        response = await call_llm(
+            llm_structured_drafts,
+            [
+                SystemMessage(
+                    content=f"{DRAFT_SYSTEM_MESSAGE}\n\n{OBJECT_TYPE_EXPLAIN_MESSAGE}"
+                ),
+                HumanMessage(
+                    content=f"ПРОМПТ ДЛЯ СЛАЙДА: {state["prompt"]}\n\n"
+                    # f"ВЫБОРКА ВСПОМОГАТЕЛЬНЫХ ДАННЫХ ИЗ ТАБЛИЦЫ: {state['data_anlyze_result']}"
+                ),
+            ],
+            config=config_creative,
+        )
 
-    return {"draft_slides": {state["idx"]: [create_draft_json(response)]}}
+        return {"draft_slides": {state["idx"]: response}}
 
 
-def combine_drafts(state: DraftAgentState) -> DraftAgentState:
-    drafts = state.get("draft_slides", {})
+def combine_drafts(state: dict) -> DraftAgentState:
+    drafts = normalize_draft_slides(state.get("draft_slides", {}))
 
-    return {"draft_slides": drafts}
+    return {
+        "draft_slides": {
+            idx: [create_draft_json(slide)] for idx, slide in drafts.items()
+        }
+    }
 
 
 async def review_and_edit(state: OverallState) -> dict:
@@ -237,14 +255,28 @@ async def review_and_edit(state: OverallState) -> dict:
 # Edge decision
 def prompt_route_tasks(state: PromptAgentState) -> list[Send]:
     return [
-        Send("generate_prompt", {"idx": idx, "metric": metric})
+        Send(
+            "generate_prompt",
+            {
+                "idx": idx,
+                "metric": metric,
+                "data_anlyze_result": state["data_anlyze_result"],
+            },
+        )
         for idx, metric in state["tasks"]
     ]
 
 
 def draft_route_tasks(state: DraftAgentState) -> list[Send]:
     return [
-        Send("generate_draft", {"idx": idx, "prompt": build_promt_message(promptSlide)})
+        Send(
+            "generate_draft",
+            {
+                "idx": idx,
+                "prompt": build_promt_message(promptSlide),
+                "data_anlyze_result": state["data_anlyze_result"],
+            },
+        )
         for idx, promptSlide in state["tasks"]
     ]
 

@@ -1,4 +1,5 @@
 import os
+from asyncio import Semaphore
 
 from dotenv import load_dotenv
 from duckdb import DuckDBPyConnection, DuckDBPyRelation
@@ -13,11 +14,13 @@ from tenacity import (
 
 load_dotenv()
 
-WORKERS_POOL_SIZE = os.getenv("WORKERS_POOL_SIZE")
+WORKERS_POOL_SIZE = os.getenv("MAXIMUM_PARALLEL_PROCESSES")
 if WORKERS_POOL_SIZE is None or int(WORKERS_POOL_SIZE) < 0:
     WORKERS_POOL_SIZE = 1
 else:
     WORKERS_POOL_SIZE = int(WORKERS_POOL_SIZE)
+
+semaphore = Semaphore(WORKERS_POOL_SIZE)
 
 
 @retry(
@@ -44,14 +47,14 @@ if simple_model_name := os.getenv("SIMPLE_CHAT_MODEL_NAME"):
     simple_llm = init_chat_model(
         simple_model_name,
         base_url=os.getenv("CONNECT_BASE_URL"),
-        configurable_fields=("temperature", "max_concurrency", "max_tokens"),
+        configurable_fields=("temperature", "max_tokens"),
         temperature=0.0,
     )
 if thinking_model_name := os.getenv("THINKING_CHAT_MODEL_NAME"):
     thinking_llm = init_chat_model(
         thinking_model_name,
         base_url=os.getenv("CONNECT_BASE_URL"),
-        configurable_fields=("temperature", "max_concurrency", "max_tokens"),
+        configurable_fields=("temperature", "max_tokens"),
         temperature=0.0,
     )
 

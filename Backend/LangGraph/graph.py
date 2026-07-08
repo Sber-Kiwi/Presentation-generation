@@ -1,6 +1,7 @@
 import asyncio
 
 from _save_stage import dev_cache
+from final_slide_generation.subgraph import build_final_json_subgraph
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from models import PromptList
@@ -10,7 +11,6 @@ from nodes import (
     data_agent,
     draft_prepare_tasks,
     draft_route_tasks,
-    final_json_route_tasks,
     generate_draft,
     generate_prompt,
     metrics_splitter,
@@ -89,12 +89,14 @@ def build_graph() -> CompiledStateGraph:
     graph.add_node("prompt_agent", run_prompt_agent)
     graph.add_node("draft_agent", run_draft_agent)
     graph.add_node("edit_agent", review_and_edit)
+    graph.add_node("final_json_agent", run_final_json_agent)
 
     graph.add_edge(START, "metrics_agent")
     graph.add_edge("metrics_agent", "prompt_agent")
     graph.add_edge("prompt_agent", "draft_agent")
     graph.add_edge("draft_agent", "edit_agent")
-    graph.add_edge("edit_agent", END)
+    graph.add_edge("edit_agent", "final_json_agent")
+    graph.add_edge("final_json_agent", END)
 
     return graph.compile()
 
@@ -102,6 +104,7 @@ def build_graph() -> CompiledStateGraph:
 metrics_subgraph = build_metrics_graph()
 prompt_subgraph = build_prompts_subgraph()
 draft_subgraph = build_draft_subgraph()
+final_json_subgraph = build_final_json_subgraph()
 
 
 @dev_cache("metrics")
@@ -111,11 +114,13 @@ async def run_metrics_agent(state: OverallState) -> dict:
         "messages": [],
         "presentation_name": "",
         "metrics": [],
+        "data_anlyze_result": "",
     }
     result = await asyncio.to_thread(metrics_subgraph.invoke, sub_input)
     return {
         "presentation_name": result["presentation_name"],
         "metrics": result["metrics"],
+        "data_anlyze_result": result["data_anlyze_result"],
     }
 
 
@@ -127,6 +132,7 @@ async def run_prompt_agent(state: OverallState) -> dict:
         "tasks": [],
         "prompts": {},
         "flat_prompts": PromptList(prompts=[]),
+        "data_anlyze_result": state["data_anlyze_result"],
     }
     result = await prompt_subgraph.ainvoke(sub_input)
     return {"flat_prompts": result["flat_prompts"]}
@@ -138,7 +144,22 @@ async def run_draft_agent(state: OverallState) -> dict:
         "flat_prompts": state["flat_prompts"],
         "tasks": [],
         "draft_slides": {},
+        "data_anlyze_result": state["data_anlyze_result"],
     }
 
     result = await draft_subgraph.ainvoke(sub_input)
     return {"draft_slides": result["draft_slides"]}
+
+
+@dev_cache("final")
+async def run_final_json_agent(state: OverallState) -> dict:
+    drafts = {idx: draft_json[-1] for idx, draft_json in state["draft_slides"].items()}
+
+    sub_input: FinalJsonState = {
+        "draft_slides": drafts,
+        "final_slides": {},
+        "tasks": [],
+    }
+
+    result = await final_json_subgraph.ainvoke(sub_input)
+    return {"final_slides": result["final_slides"]}
