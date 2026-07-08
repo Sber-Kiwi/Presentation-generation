@@ -119,17 +119,66 @@ FR-14: Во время обработки других задач система
 - **Нарушение constraints (UNIQUE, FOREIGN KEY, CHECK):** Автоматический откат транзакции, возврат модулю специфичной ошибки (например, ConflictError для дублей версий слайда).
 
 ## 5. База данных и хранение данных
-### 5.1. ER-диаграмма
-### 5.2. Схема базы данных
+### 5.1. Схема базы данных
 ![schema.png](../Database%20Content/schemas/schema.png)
 
-### 5.3. Словарь данных
-#### Таблица: `Chat`
+### 5.2. Словарь данных
+#### Таблица: `users`
 | Поле | Тип | Nullable | Default | Описание | Ограничения |
 |------|-----|----------|---------|----------|-------------|
+| userID | `int` | no | auto-increment | уникальный идентификатор пользователя | primary key |
+| department | `varchar(40)` | no |   -     |  отдел пользователя | `CHECK`(длина строки без пробелов > `0`) |
 
-### 5.4. Ограничения
+#### Таблица: `csvs`
+| Поле | Тип | Nullable | Default | Описание | Ограничения |
+|------|-----|----------|---------|----------|-------------|
+|csvID | `int` | no | auto-increment | уникальный идентификатор CSV файда | primary key |
+|file | `bytea` | no | - | бинарное содержимое CSV файла | - |
 
+ #### Таблица: `jsons`
+| Поле | Тип | Nullable | Default | Описание | Ограничения |
+|------|-----|----------|---------|----------|-------------|
+|jsonID | `int` | no | auto-increment | уникальный идентификатор финального JSON файла | primary key |
+|file | `jsonb` | no | - | содержимое JSON файла в бинарном JSON формате | - |
+
+#### Таблица: `chats`
+| Поле | Тип | Nullable | Default | Описание | Ограничения |
+|------|-----|----------|---------|----------|-------------|
+| chatID | `int` | no | auto-increment | уникальный идентификатор чата | primary key |
+| userID | `int` | no | - | id пользователя, создавшего чат | FOREIGN KEY -> `users(userID)` ON DELETE CASCADE |
+| csvID | `int` | no | - | id прикрепленного CSV файла | FOREIGN KEY -> `csvs(csvID)` ON DELETE CASCADE |
+| jsonID | `int` | yes | `null` | id финального JSON файла | FOREIGN KEY -> `jsons(jsonID)` ON DELETE SET NULL |
+| title | `varchar(100)` | no | - | название чата | `CHECK` (длина строки без пробелов > `0`) |
+| prompt | `varchar(500)` | no | - | начальный промпт чата | `CHECK` (длина строки без пробелов > `0`) |
+| created_at | `timestamptz` | no | `now()` | дата и время создания чата | - |
+
+#### Таблица: `slides`
+| Поле | Тип | Nullable | Default | Описание | Ограничения |
+|------|-----|----------|---------|----------|-------------|
+| slideID | `int` | no | auto-increment | уникальный идентификатор чата | primary key | 
+| chatID | `int` | no | - | id чата, к которому принадлежит слайд | FOREIGN KEY -> `chats(chatID)` ON DELETE CASCADE |
+| num | `smallint` | no | - | порядковый номер слайда в рамках чата (презентации) | CHECK (`num > 0`), UNIQUE (`chatID`, `num`) |
+
+#### Таблица: `versions`
+| Поле | Тип | Nullable | Default | Описание | Ограничения |
+|------|-----|----------|---------|----------|-------------|
+| versionID | `int` | no | auto-increment | уникальный идентификатор версии | primary key |
+| slideID | `int` | no | - | id слайда, к которому относится версия | FOREIGN KEY -> `slides(slideID)` ON DELETE CASCADE |
+| json | `jsonb` | no | - | структурированные данные слайда | - |
+| prompt | `varchar(250)` | no | - | промпт, исползованный для генерации версии слайда | CHECK (длина строки без пробелов > `0`) |
+| created_at | `timestamptz` | no | `now()` | дата и время создания версии | - |
+| is_final | `boolean` | no | `false` | флаг того, что версия является финальной | PARTIAL UNIQUE INDEX (`slideID`) WHERE `is_final = true` |
+
+#### Таблица: `versions`
+| Поле | Тип | Nullable | Default | Описание | Ограничения |
+|------|-----|----------|---------|----------|-------------|
+| taskID | `int` | no | auto-increment | уникальный идентификатор задачи | primary key |
+| chatID | `int` | no | - | id чата, для которого выполняется задача | FOREIGN KEY -> `chats(chatID)` ON DELETE CASCADE |
+| versionID | `int` | yes | null | id версии, над которой выполняется задача | FOREIGN KEY -> `versions(versionID)` ON DELETE CASCADE |
+| type | `int` | no | - | тип задачи (кодовая константа) | - | 
+| prompt | `varchar(500)` | no | - | промпт для выполнения задачи | CHECK (длина строки без пробелов > `0`) |
+| status | `int` | no | 0 | статус задачи (0 -- новая, 1 -- в работе, 2 -- завершена, 4 -- завершена с ошибкой) | CHECK (`status` BETWEEN `0` AND `3`) |
+| error_message | `varchar(100)` | yes | null | текст ошибки | - |
 
 
 ## 6. API
