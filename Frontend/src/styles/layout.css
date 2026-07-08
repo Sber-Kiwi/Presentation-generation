@@ -28,6 +28,7 @@
   align-items: center;
   gap: 14px;
   padding: 18px;
+  overflow-y: auto;
 }
 
 .chats.collapsed {
@@ -45,6 +46,7 @@
   background: #fff;
   font-size: 22px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .chat,
@@ -58,6 +60,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex-shrink: 0;
 }
 
 .active {
@@ -183,7 +186,7 @@
   flex-direction: column;
   gap: 10px;
   padding: 10px;
-  margin: 20px;
+  margin: 15px;
   border: 3px solid #999;
   border-radius: 4px;
 }
@@ -210,7 +213,6 @@
 .grid-item-bg {
   border: 2px dashed #ccc;
   border-radius: 4px;
-  bac
   z-index: 1;
 }
 
@@ -222,7 +224,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 20px;
+  padding: 12px 20px;
   border-top: 3px solid #333;
 }
 
@@ -263,6 +265,8 @@
   padding: 18px;
   border: 3px solid #333;
   border-radius: 4px;
+  overflow-y: auto;
+  max-height: 560px;
 }
 
 .save {
@@ -310,4 +314,150 @@
 .start .send {
   width: 28px;
   height: 28px;
+}
+
+.start-input {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.start-input .edit {
+  width: 100%;
+}
+
+/* ===========================================================
+   ПРИКРЕПЛЁННЫЙ CSV-ФАЙЛ НА СТАРТОВОМ ЭКРАНЕ
+   =========================================================== */
+.attached-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border: 2px solid #333;
+  border-radius: 16px;
+  background: #fff;
+  font-size: 14px;
+}
+
+.attached-file-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+
+.remove-file {
+  border: none;
+  background: none;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  color: #333;
+  padding: 0 2px;
+}
+
+.remove-file:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+/* ===========================================================
+   СООБЩЕНИЯ ОБ ОШИБКАХ И ПОДСКАЗКИ
+   =========================================================== */
+.error-text {
+  color: #c0392b;
+  font-size: 13px;
+  text-align: center;
+}
+
+.hint-text {
+  color: #666;
+  font-size: 13px;
+  padding: 0 20px;
+}
+
+.global-error {
+  padding: 8px 20px;
+}
+
+.main-loading {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #333;
+}
+
+/* ===========================================================
+   ПОЛЕ ПРАВОК СЛАЙДА (обёртка с подсказкой/ошибкой под ним)
+   =========================================================== */
+.slide-edit-wrapper {
+  display: flex;
+  flex-direction: column;
+  border-top: 3px solid #333;
+}
+
+.slide-edit-wrapper .edit {
+  border-top: none;
+}
+
+.comment:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===========================================================
+   КНОПКИ ВЕРСИЙ / СОХРАНЕНИЯ В ЗАБЛОКИРОВАННОМ СОСТОЯНИИ
+   =========================================================== */
+.version:disabled,
+.save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===========================================================
+   ПОЛНОЭКРАННЫЙ ОВЕРЛЕЙ ЗАГРУЗКИ
+   =========================================================== */
+.blocking-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.blocking-loader-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.spinner {
+  width: 56px;
+  height: 56px;
+  border: 5px solid #ccc;
+  border-top-color: #333;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.blocking-loader-text {
+  font-size: 16px;
+  color: #333;
+  text-align: center;
+  max-width: 320px;
 }
