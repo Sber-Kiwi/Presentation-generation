@@ -1,5 +1,7 @@
 /* ===========================================================
    ТЕМА: «КИВИ»
+
+   Этот файл подключается в main.jsx ПОСЛЕ layout.css
    =========================================================== */
 
 :root {
@@ -11,6 +13,8 @@
   --kiwi-cream-dim: #f3ecd8;
   --kiwi-seed: #2e2014;
   --kiwi-bg: #f6f1e4;
+  --kiwi-error: #b6412b;
+  --kiwi-error-bg: #f6e2dc;
   --kiwi-shadow: 0 4px 14px rgba(60, 40, 15, 0.14);
 }
 
@@ -38,7 +42,7 @@
   gap: 12px;
 }
 
-#new-chat {
+.new-chat {
   border: none;
   border-radius: 50%;
   background: var(--kiwi-flesh);
@@ -52,11 +56,11 @@
     transform 0.1s ease;
 }
 
-#new-chat:hover {
+.new-chat:hover {
   background: var(--kiwi-flesh-dark);
 }
 
-#new-chat:active {
+.new-chat:active {
   transform: scale(0.96);
 }
 
@@ -82,9 +86,45 @@
   color: var(--kiwi-cream);
 }
 
+.new-chat.active,
+.chat.active,
+.version.active {
+  filter: none;
+  background: var(--kiwi-flesh-dark);
+  color: var(--kiwi-cream);
+}
+
+.version:disabled {
+  background: var(--kiwi-cream-dim);
+  color: var(--kiwi-skin);
+}
+
+.toggle-chats {
+  background: var(--kiwi-skin);
+  color: var(--kiwi-cream);
+  transition: background 0.15s ease;
+}
+
+.toggle-chats:hover {
+  background: var(--kiwi-flesh-dark);
+  color: var(--kiwi-cream);
+}
+
+.symbol-chain {
+  color: var(--kiwi-cream);
+}
+
 /* ===========================================================
    ОСНОВНАЯ ОБЛАСТЬ
    =========================================================== */
+.presentation-title {
+  color: var(--kiwi-seed);
+  border-color: var(--kiwi-skin);
+}
+
+.main-loading {
+  color: var(--kiwi-seed);
+}
 
 /* ===========================================================
    ЗОНА СЛАЙДА СО СТРЕЛКАМИ
@@ -107,10 +147,6 @@
   background: var(--kiwi-flesh-light);
 }
 
-#move-to-left {
-  transform: rotate(180deg);
-}
-
 /* ===========================================================
    КАРТОЧКА СЛАЙДА
    =========================================================== */
@@ -127,6 +163,12 @@
   font-weight: 600;
 }
 
+.slide-select {
+  border-color: var(--kiwi-skin);
+  background: var(--kiwi-cream);
+  color: var(--kiwi-seed);
+}
+
 #include-slide-checkbox {
   width: 18px;
   height: 18px;
@@ -140,32 +182,53 @@
   border-radius: 14px;
 }
 
-#edits {
-  background: var(--kiwi-cream);
-  border-top: 2px solid var(--kiwi-skin);
+.grid-item-bg {
+  border-color: var(--kiwi-skin);
 }
 
-#comment {
+.grid-item {
+  border-color: var(--kiwi-skin) !important;
+  background: var(--kiwi-cream) !important;
+}
+
+/* ===========================================================
+   ПОЛЕ ПРАВОК 
+   =========================================================== */
+.slide-edit-wrapper {
+  border-color: var(--kiwi-skin);
+}
+
+.edit {
+  background: var(--kiwi-cream);
+  border-color: var(--kiwi-skin);
+}
+
+.comment {
   border: 2px solid var(--kiwi-cream-dim);
   border-radius: 20px;
   background: var(--kiwi-cream-dim);
   font-family: inherit;
-  font-size: 14px;
   color: var(--kiwi-seed);
   transition: border-color 0.15s ease;
 }
 
-#comment:focus {
+.comment:focus {
   outline: none;
   border-color: var(--kiwi-flesh);
 }
 
-#comment::placeholder {
+.comment::placeholder {
   color: var(--kiwi-skin);
   opacity: 0.7;
 }
 
-#send-edit {
+.comment:disabled {
+  background: var(--kiwi-cream-dim);
+  color: var(--kiwi-skin);
+  opacity: 0.7;
+}
+
+.send-edit {
   padding: 9px;
   border-radius: 50%;
   background: var(--kiwi-flesh);
@@ -175,12 +238,29 @@
     transform 0.1s ease;
 }
 
-#send-edit:hover {
+.send-edit:hover {
   background: var(--kiwi-flesh-dark);
 }
 
-#send-edit:active {
+.send-edit:active {
   transform: scale(0.94);
+}
+
+.hint-text {
+  color: var(--kiwi-skin);
+}
+
+/* ===========================================================
+   ОШИБКИ 
+   =========================================================== */
+.error-text {
+  color: var(--kiwi-error);
+}
+
+.global-error {
+  background: var(--kiwi-error-bg);
+  border-radius: 10px;
+  margin: 8px 20px 0;
 }
 
 /* ===========================================================
@@ -193,7 +273,7 @@
   box-shadow: var(--kiwi-shadow);
 }
 
-#save {
+.save {
   border: none;
   border-radius: 16px;
   background: var(--kiwi-flesh);
@@ -206,28 +286,33 @@
     transform 0.1s ease;
 }
 
-#save:hover {
+.save:hover {
   background: var(--kiwi-flesh-dark);
   color: var(--kiwi-cream);
 }
 
-#save:active {
+.save:active {
   transform: scale(0.98);
 }
 
+.save:disabled {
+  background: var(--kiwi-cream-dim);
+  color: var(--kiwi-skin);
+}
+
 /* ===========================================================
-   ГЛАВНЫЙ ЭКРАН (#start): приветствие + строка ввода
+   ГЛАВНЫЙ ЭКРАН (.start): приветствие + строка ввода
    =========================================================== */
-#greeting {
+.greeting {
   color: var(--kiwi-seed);
 }
 
-#start #edits {
+.start .edit {
   background: var(--kiwi-cream);
   border-color: var(--kiwi-skin);
 }
 
-#paperclip {
+.start input.send[name="paperclip"] {
   padding: 7px;
   border-radius: 50%;
   background: var(--kiwi-cream-dim);
@@ -236,10 +321,70 @@
     transform 0.1s ease;
 }
 
-#paperclip:hover {
+.start input.send[name="paperclip"]:hover {
   background: var(--kiwi-flesh-light);
 }
 
-#paperclip:active {
+.start input.send[name="paperclip"]:active {
   transform: scale(0.94);
+}
+
+.start input.send[name="send-edit"] {
+  padding: 5px;
+  border-radius: 50%;
+  background: var(--kiwi-flesh);
+  box-shadow: var(--kiwi-shadow);
+  transition:
+    background 0.15s ease,
+    transform 0.1s ease;
+}
+
+.start input.send[name="send-edit"]:hover {
+  background: var(--kiwi-flesh-dark);
+}
+
+.start input.send[name="send-edit"]:active {
+  transform: scale(0.94);
+}
+
+.attached-file {
+  background: var(--kiwi-cream);
+  border: 2px solid var(--kiwi-skin);
+  color: var(--kiwi-seed);
+}
+
+.remove-file {
+  color: var(--kiwi-skin);
+}
+
+.remove-file:hover {
+  color: var(--kiwi-error);
+}
+
+.remove-file:disabled {
+  color: var(--kiwi-skin);
+}
+
+/* ===========================================================
+   ПОЛНОЭКРАННЫЙ ОВЕРЛЕЙ ЗАГРУЗКИ (генерация / экспорт / список чатов)
+   =========================================================== */
+.blocking-loader {
+  background: rgba(246, 241, 228, 0.92);
+}
+
+.blocking-loader-box {
+  background: var(--kiwi-cream);
+  border: 2px solid var(--kiwi-skin);
+  border-radius: 20px;
+  padding: 32px 40px;
+  box-shadow: var(--kiwi-shadow);
+}
+
+.spinner {
+  border-color: var(--kiwi-flesh-light);
+  border-top-color: var(--kiwi-flesh-dark);
+}
+
+.blocking-loader-text {
+  color: var(--kiwi-seed);
 }

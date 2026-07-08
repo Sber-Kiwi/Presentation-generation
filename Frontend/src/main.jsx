@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles/layout.css";
-// import "./styles/style-kiwi.css";
+import "./styles/style-kiwi.css";
 import App from "./App.jsx";
 
 createRoot(document.getElementById("root")).render(

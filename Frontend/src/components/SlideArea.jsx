@@ -8,8 +8,12 @@ export default function SlideArea({
   onSelectedSlide,
   currentVersion,
   currentSlideState,
-  setSlides,
   onInPresentationChange,
+  editValue,
+  onEditChange,
+  onSubmitEdit,
+  isEditing,
+  editError,
 }) {
   const currentIndex = slides.findIndex((s) => s.slideID === selectedSlideId);
   const currentActualIndex = currentIndex !== -1 ? currentIndex : 0;
@@ -49,10 +53,16 @@ export default function SlideArea({
           onSelectedSlide={onSelectedSlide}
           currentSlideState={currentSlideState}
           onInPresentationChange={onInPresentationChange}
-          currentVersionId={currentVersion.versionID}
+          currentVersionId={currentVersion?.versionID}
         />
         <SlideDraft draft={currentVersion} />
-        <SlideEdit />
+        <SlideEdit
+          value={editValue}
+          onChange={onEditChange}
+          onSubmit={onSubmitEdit}
+          disabled={isEditing}
+          error={editError}
+        />
       </div>
       <input
         type="image"

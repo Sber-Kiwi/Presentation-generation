@@ -3,6 +3,7 @@ export default function VersionPanel({
   selectedVersionId,
   onSelectVersion,
   onSave,
+  disabled,
 }) {
   return (
     <div id="versions-and-save" className="versions-and-save">
@@ -11,14 +12,21 @@ export default function VersionPanel({
           <button
             key={version.versionID}
             className={`version ${version.versionID === selectedVersionId ? "active" : ""}`}
-            onClick={() => onSelectVersion(version.versionID)}
+            onClick={() => !disabled && onSelectVersion(version.versionID)}
+            disabled={disabled}
           >
             Версия {index + 1}
           </button>
         ))}
       </div>
 
-      <button id="save" className="save" name="save" onClick={onSave}>
+      <button
+        id="save"
+        className="save"
+        name="save"
+        onClick={onSave}
+        disabled={disabled}
+      >
         Сохранить <br /> презентацию
       </button>
     </div>

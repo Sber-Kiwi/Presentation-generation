@@ -30,8 +30,8 @@ export default function SlideDraft({ draft }) {
               gridColumn: `${object.cell_pos.x} / span ${object.span.x}`,
               gridRow: `${object.cell_pos.y} / span ${object.span.y}`,
               border: "2px solid #333",
-              "border-radius": "4px",
-              "background-color": "#fff",
+              borderRadius: "4px",
+              backgroundColor: "#fff",
             }}
           >
             <p>{object.type}</p>

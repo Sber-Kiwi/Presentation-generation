@@ -19,8 +19,8 @@ CREATE TABLE jsons (
 
 CREATE TABLE chats (
     chatID      SERIAL NOT NULL PRIMARY KEY,
-    userID      INT REFERENCES users(userID) ON DELETE CASCADE,
-    csvID       INT REFERENCES csvs(csvid) ON DELETE CASCADE,
+    userID      INT NOT NULL REFERENCES users(userID) ON DELETE CASCADE,
+    csvID       INT NOT NULL REFERENCES csvs(csvid) ON DELETE CASCADE,
     jsonID      INT REFERENCES jsons(jsonid) ON DELETE SET NULL,
     title       VARCHAR(100) NOT NULL,
     prompt      VARCHAR(500) NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE chats (
 
 CREATE TABLE slides (
     slideID     SERIAL NOT NULL PRIMARY KEY,
-    chatID      INT REFERENCES chats(chatID) ON DELETE CASCADE,
+    chatID      INT NOT NULL REFERENCES chats(chatID) ON DELETE CASCADE,
     num         SMALLINT NOT NULL CHECK (num > 0),
     
     CONSTRAINT uq_slide_num UNIQUE (chatID, num)
@@ -40,7 +40,7 @@ CREATE TABLE slides (
 
 CREATE TABLE versions (
     versionID       SERIAL NOT NULL PRIMARY KEY,
-    slideID         INT REFERENCES slides(slideID) ON DELETE CASCADE,
+    slideID         INT  NOT NULL REFERENCES slides(slideID) ON DELETE CASCADE,
     json            JSONB NOT NULL,
     prompt          VARCHAR(250) NOT NULL,
     created_at      TIMESTAMPTZ DEFAULT now() NOT NULL,
@@ -56,7 +56,7 @@ CREATE UNIQUE INDEX one_final_version_per_slide
 
 CREATE TABLE tasks (
     taskID         SERIAL NOT NULL PRIMARY KEY,
-    chatID         INT REFERENCES chats(chatID) ON DELETE CASCADE,
+    chatID         INT NOT NULL REFERENCES chats(chatID) ON DELETE CASCADE,
     versionID      INT REFERENCES versions(versionID) ON DELETE CASCADE,
     type           INT NOT NULL,
     prompt         VARCHAR(500) NOT NULL,
