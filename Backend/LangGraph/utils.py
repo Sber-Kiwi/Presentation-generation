@@ -2,6 +2,13 @@ import json
 
 from models import DraftSlide, Json, ObjectPosition, ObjectSpan, PromptSlide, SlideItem
 
+GRID_ORIGIN_X = 0.03
+GRID_ORIGIN_Y = 0.20
+GRID_WIDTH = 0.94
+GRID_HEIGHT = 0.79
+# небольшой зазор между соседними ячейками сетки
+CELL_GAP = 0.01
+
 
 def create_draft_json(draftSlide: DraftSlide) -> Json:
     return {
@@ -41,6 +48,18 @@ def parse_json_to_draft(json_dict: Json) -> DraftSlide:
             for item in json_dict["objects"]
         ],
     )
+
+
+def resolve_grid_position(x: int, y: int, horizontal_span: int = 1, vertical_span: int = 1) -> dict:
+    cell_w = (GRID_WIDTH - (HORIZONTAL_SIZE - 1) * CELL_GAP) / HORIZONTAL_SIZE
+    cell_h = (GRID_HEIGHT - (VERTICAL_SIZE - 1) * CELL_GAP) / VERTICAL_SIZE
+ 
+    abs_x = GRID_ORIGIN_X + (x - 1) * (cell_w + CELL_GAP)
+    abs_y = GRID_ORIGIN_Y + (y - 1) * (cell_h + CELL_GAP)
+    width = horizontal_span * cell_w + (horizontal_span - 1) * CELL_GAP
+    height = vertical_span * cell_h + (vertical_span - 1) * CELL_GAP
+ 
+    return {"x": abs_x, "y": abs_y, "width": width, "height": height}
 
 
 def build_promt_message(promptSlide: PromptSlide) -> str:
