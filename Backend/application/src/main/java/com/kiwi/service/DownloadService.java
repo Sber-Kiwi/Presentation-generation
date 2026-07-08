@@ -12,6 +12,7 @@ import com.kiwi.exception.NotFoundException;
 import com.kiwi.util.IdUtil;
 import com.kiwi.util.StatusUtil;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,11 +27,13 @@ public class DownloadService {
     private final ChatsRepository chatsRepository;
     private final TasksRepository tasksRepository;
     private final AgentService agentService;
+    private final ObjectMapper objectMapper;
 
-    public DownloadService(ChatsRepository chatsRepository, TasksRepository tasksRepository, AgentService agentService) {
+    public DownloadService(ChatsRepository chatsRepository, TasksRepository tasksRepository, AgentService agentService, ObjectMapper objectMapper) {
         this.chatsRepository = chatsRepository;
         this.tasksRepository = tasksRepository;
         this.agentService = agentService;
+        this.objectMapper = objectMapper;
     }
 
     // POST /chats/{chatID}/downloads
@@ -41,7 +44,12 @@ public class DownloadService {
         Tasks task = new Tasks();
         task.setChat(chat);
         task.setType(2);
-        task.setPrompt("Export to PPTX"); // заглушка
+        try {
+            String slidesJson = objectMapper.writeValueAsString(dto.getSlides());
+            task.setPrompt(slidesJson);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize slides for export", e);
+        }
         task.setStatus(0);
         Tasks saved = tasksRepository.save(task);
 

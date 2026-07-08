@@ -120,6 +120,7 @@ public class ChatService {
                 .max(Comparator.comparing(Versions::getCreatedAt))
                 .ifPresent(latest -> {
                     SlideStateDto state = new SlideStateDto();
+                    state.setSlideID(IdUtil.slideId(slide.getSlideID()));
                     state.setSelectedVersionID(IdUtil.versionId(latest.getVersionID()));
                     state.setInPresentation(true);
                     slideDto.setState(state);
