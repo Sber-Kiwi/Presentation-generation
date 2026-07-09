@@ -702,6 +702,14 @@ class PptxBuilder:
                 p.font.bold = True
 
 
+import sys
+
 if __name__ == "__main__":
-    builder = PptxBuilder("test_data_new.json", "output.pptx")
+    if len(sys.argv) < 3:
+        print("Usage: python pptx_generator.py <input.json> <output.pptx>")
+        sys.exit(1)
+    
+    input_json = sys.argv[1]
+    output_pptx = sys.argv[2]
+    builder = PptxBuilder(input_json, output_pptx)
     builder.build()
