@@ -9,4 +9,6 @@ public interface TasksRepository extends JpaRepository<Tasks, Integer> {
 
     Optional<Tasks> findTopByChat_ChatIDAndTypeOrderByTaskIDDesc(Integer chatID, Integer type);
 
+    List<Tasks> findByStatusIn(List<Integer> statuses);
+
 }

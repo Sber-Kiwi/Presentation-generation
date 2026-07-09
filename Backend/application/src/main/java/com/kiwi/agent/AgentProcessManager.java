@@ -38,11 +38,11 @@ public class AgentProcessManager {
         this.objectMapper = objectMapper;
     }
 
-    public AgentSession getSession(Integer chatID) throws Exception {
+    public AgentSession getSession(Integer chatID, String mode) throws Exception {
         AgentSession session = sessions.get(chatID);
 
         if (session == null) {
-            log.info("Creating new AgentSession for chatID: {}", chatID);
+            log.info("Creating new AgentSession for chatID: {} with mode: {}", chatID, mode);
 
             Chats chat = chatsRepository.findById(chatID).orElse(null);
 
@@ -53,7 +53,7 @@ public class AgentProcessManager {
             Path tempCsvFile = Files.createTempFile("chat_" + chatID + "_", ".csv");
             Files.write(tempCsvFile, chat.getCsv().getFile());
 
-            session = new AgentSession(SCRIPT_PATH, tempCsvFile);
+            session = new AgentSession(SCRIPT_PATH, tempCsvFile, mode);
             sessions.put(chatID, session);
         }
 

@@ -32,10 +32,13 @@ public class AgentSession {
     private final Object slotMonitor = new Object();
     private volatile boolean isRunning = true;
 
-    public AgentSession(String scriptPath, Path csvFilePath) throws IOException {
+    private final String mode;
+
+    public AgentSession(String scriptPath, Path csvFilePath, String mode) throws IOException {
         this.csvFilePath = csvFilePath;
+        this.mode = mode;
         
-        ProcessBuilder pb = new ProcessBuilder("python3", scriptPath, "--csv_path", csvFilePath.toAbsolutePath().toString());
+        ProcessBuilder pb = new ProcessBuilder("python3", scriptPath, "--csv_path", csvFilePath.toAbsolutePath().toString(), "--mode", mode);
         pb.redirectErrorStream(false); 
         
         this.process = pb.start();
@@ -71,19 +74,40 @@ public class AgentSession {
                                 CompletableFuture<Boolean> f = handshakes.get(taskId);
                                 if (f != null) f.complete(true);
                             } 
-                            else if ("rejected".equals(status)) {
+                            else if ("notready".equals(status)) {
                                 CompletableFuture<Boolean> f = handshakes.get(taskId);
                                 if (f != null) f.complete(false);
                             } 
                             else if ("accepted".equals(status)) {
                                 log.debug("Python successfully accepted data for task {}", taskId);
                             }
+                            else if ("rejected".equals(status)) {
+                                log.warn("Python rejected the payload for task {}", taskId);
+                                CompletableFuture<String> f = pendingResults.get(taskId);
+                                if (f != null) {
+                                    f.completeExceptionally(new RuntimeException("Task payload was rejected by Python"));
+                                    pendingResults.remove(taskId);
+                                }
+                                synchronized (slotMonitor) {
+                                    slotMonitor.notifyAll();
+                                }
+                            }
                         }
 
-                        if (response.has("result")) {
+                        if (response.has("output_file")) {
                             CompletableFuture<String> f = pendingResults.get(taskId);
                             if (f != null) {
-                                f.complete(line);
+                                f.complete(response.get("output_file").asText());
+                                pendingResults.remove(taskId);
+                            }
+
+                            synchronized (slotMonitor) {
+                                slotMonitor.notifyAll();
+                            }
+                        } else if (response.has("error_message")) {
+                            CompletableFuture<String> f = pendingResults.get(taskId);
+                            if (f != null) {
+                                f.completeExceptionally(new RuntimeException(response.get("error_message").asText()));
                                 pendingResults.remove(taskId);
                             }
 
@@ -171,6 +195,10 @@ public class AgentSession {
 
     public long getLastActiveTime() {
         return lastActiveTime;
+    }
+
+    public String getMode() {
+        return mode;
     }
 
     public void close() {
