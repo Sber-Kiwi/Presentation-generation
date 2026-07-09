@@ -240,7 +240,7 @@ async def review_and_edit(state: OverallState) -> dict:
         send_message(OutputAction(task_id=action["task_id"], status="ready"))
     else:
         send_message(OutputAction(task_id=action["task_id"], status="notready"))
-        return {"route": "edit"}
+        return {"edit_route": "edit"}
 
     body_payload = await _read_json_line(f"тело запроса для action={action["action"]}")
     body = _validate_body(body_payload, action)
@@ -252,6 +252,7 @@ async def review_and_edit(state: OverallState) -> dict:
             "draft_slides": read_file_input(body["input_file"], "export").get(
                 "slides", {}
             ),
+            "output_file": body["output_file"],
         }
 
     # action["action"] == "edit"
@@ -284,7 +285,7 @@ async def review_and_edit(state: OverallState) -> dict:
 
     if not accepted:
         send_message(OutputAction(task_id=state["task_id"], status="rejected"))
-        return {"route": "edit"}
+        return {"edit_route": "edit"}
 
     send_message(OutputAction(task_id=state["task_id"], status="accepted"))
 
@@ -292,7 +293,7 @@ async def review_and_edit(state: OverallState) -> dict:
 
     if "error" in result_holder:
         send_message(OutputError(error_message=result_holder["error"]))
-        return {"route": "edit"}
+        return {"edit_route": "edit"}
 
     write_result(
         data=EditFileOut(
@@ -304,7 +305,7 @@ async def review_and_edit(state: OverallState) -> dict:
     send_message(
         EditResponse(task_id=state["task_id"], output_file=state["output_file"])
     )
-    return {"route": "edit"}
+    return {"edit_route": "edit"}
 
 
 # Edge decision
@@ -340,9 +341,9 @@ def draft_route_tasks(state: DraftAgentState) -> list[Send]:
 
 
 def route_after_edit(state: OverallState) -> str:
-    if state.get("route") == "export":
+    if state["edit_route"] == "export":
         return "final_json_agent"
-    return "edit_agent"  # route == "edit" -> loop back, wait for next request
+    return "edit_agent"
 
 
 def final_json_route_tasks(state: FinalJsonState) -> list[Send]:
