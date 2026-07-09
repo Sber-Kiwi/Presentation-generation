@@ -89,7 +89,7 @@ def setupper(state: MetricsAgentState) -> MetricsAgentState:
             )
             break
         except Exception as e:
-            send_message(OutputError(error_message="Wrong input format"))
+            send_message(OutputError(task_id=edit_input["task_id"], error_message="Wrong input format"))
             continue
 
     return {
@@ -292,7 +292,7 @@ async def review_and_edit(state: OverallState) -> dict:
     await done_event.wait()
 
     if "error" in result_holder:
-        send_message(OutputError(error_message=result_holder["error"]))
+        send_message(OutputError(task_id=state["task_id"], error_message=result_holder["error"]))
         return {"edit_route": "edit"}
 
     write_result(

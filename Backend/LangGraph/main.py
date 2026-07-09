@@ -33,7 +33,8 @@ def parse_args():
 async def main() -> None:
     args = parse_args()
     agent: CompiledStateGraph = build_graph()
-    config = {"configurable": {"thread_id": "main-session"}}
+    print("agent started")
+    config = {"configurable": {"thread_id": "test-session"}}
 
     if args.file is None:
         raise ValueError(
@@ -52,7 +53,7 @@ async def main() -> None:
         try:
             action = await read_action_request(waiting_for)
         except ProtocolError as e:
-            send_message(OutputError(error_message=str(e)))
+            send_message(OutputError(task_id=-1, error_message=str(e)))
             continue
 
         expected_actions = {

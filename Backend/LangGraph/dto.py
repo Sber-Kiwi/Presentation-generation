@@ -21,6 +21,7 @@ class OutputAction(TypedDict):
 
 
 class OutputError(TypedDict):
+    task_id: int
     error_message: str
 
 
