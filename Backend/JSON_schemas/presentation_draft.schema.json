@@ -8,12 +8,8 @@
   "properties": {
     "meta": {
       "type": "object",
-      "required": ["slide_id", "title"],
+      "required": ["title"],
       "properties": {
-        "slide_id": {
-          "type": "string",
-          "description": "Уникальный ID слайда. Генерировать как 'sld_' + 12 hex-символов"
-        },
         "title": {
           "type": "string",
           "description": "Заголовок слайда. Всегда отображается в шапке - отдельная зона над сеткой, не входит в ячейки"
@@ -44,7 +40,14 @@
         },
         "type": {
           "type": "string",
-          "enum": ["TEXT", "TABLE", "LINE", "BAR", "PIE", "WATERFALL"],
+          "enum": [
+            "TEXT",
+            "TABLE",
+            "LINE_CHART",
+            "BAR_CHART",
+            "PIE_CHART",
+            "WATERFALL"
+          ],
           "description": "Единый тип объекта."
         },
         "cell_pos": {

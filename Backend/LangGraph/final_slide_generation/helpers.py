@@ -1,6 +1,7 @@
 from typing import Literal, Sequence
 from uuid import uuid4
 
+import settings
 from constants.messages import DATA_GATHER_SYSTEM_MESSAGE, JSON_BUILD_SYSTEM_MESSAGE
 from langchain_core.messages import (
     BaseMessage,
@@ -21,7 +22,6 @@ from models import (
     WaterfallData,
 )
 from nodes import sql_tool_node
-from settings import call_llm
 from utils import resolve_grid_position
 
 MAX_DATA_GATHER_ITERATIONS = 5
@@ -29,11 +29,16 @@ MAX_DATA_GATHER_ITERATIONS = 5
 
 async def gather_slide_data(slide_prompt: str) -> Sequence[BaseMessage]:
     system_message = SystemMessage(content=DATA_GATHER_SYSTEM_MESSAGE)
-    data_message = HumanMessage(content=f"ОПИСАНИЕ СЛАЙДА и ОБЪЕКТОВ: {slide_prompt}")
+    data_message = HumanMessage(
+        content=f"ОПИСАНИЕ СЛАЙДА и ОБЪЕКТОВ: {slide_prompt}\n\n"
+        f"ЗАГОЛОВКИ ТАБЛИЦЫ С ДАННЫМИ: {str(settings.sql_data.columns)}"
+    )
     messages = [system_message, data_message]
 
     for _ in range(MAX_DATA_GATHER_ITERATIONS):
-        response = await call_llm(llm_with_data_tools, messages, config=config_strict)
+        response = await settings.call_llm(
+            llm_with_data_tools, messages, config=config_strict
+        )
         messages.append(response)
 
         if not getattr(response, "tool_calls", None):
@@ -52,7 +57,7 @@ async def build_slide_json(
     data_message = HumanMessage(content=f"""ИСХОДНОЕ ОПИСАНИЕ СЛАЙДА: {slide_prompt}
 СОБРАННЫЕ ДАННЫЕ: {_summarize_tool_results(gathered_messages)}""")
 
-    response: FinalSlideData = await call_llm(
+    response: FinalSlideData = await settings.call_llm(
         llm_structured_final, [system_message, data_message], config=config_strict
     )
 
@@ -85,7 +90,7 @@ def _build_final_json_slide(
 ) -> Json:
     return {
         "meta": {
-            "slide_id": uuid4.hex[:12],
+            "slide_id": f"sld_{uuid4().hex[:12]}",
             "title": draft_slides.name,
             "number": slide_index + 1,
         },
@@ -166,7 +171,7 @@ def _build_final_json_object(
             }
 
     return {
-        "object_id": uuid4.hex[:12],
+        "object_id": f"obj_{uuid4().hex[:12]}",
         "position": resolve_grid_position(
             x=object_draft.position.x,
             y=object_draft.position.y,

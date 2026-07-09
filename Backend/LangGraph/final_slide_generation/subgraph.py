@@ -45,13 +45,12 @@ def combine_final_jsons(state: FinalJsonState) -> dict:
 
 
 def route_final_json_tasks(state: FinalJsonState) -> list[Send]:
-    drafts = state.get("draft_slides", {})
     return [
         Send(
             "build_final_json",
             {
-                "slide_index": task["slide_index"],
-                "slide_draft": drafts[task["slide_index"]],
+                "slide_index": task[0],
+                "slide_draft": task[1],
                 "gathered_messages": [],
                 "final_slide": None,
             },

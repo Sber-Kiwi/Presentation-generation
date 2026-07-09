@@ -1,5 +1,5 @@
 import operator
-from typing import Annotated, Sequence, TypedDict
+from typing import Annotated, Literal, Sequence, TypedDict
 
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
@@ -17,12 +17,14 @@ class MetricsAgentState(TypedDict):
     data_anlyze_result: str
     messages: Annotated[Sequence[BaseMessage], add_messages]
 
-    presentation_name: str  # Transitions to PromptAgentState
+    presentation_name: str
     metrics: list[str]  # Transitions to PromptAgentState
+
+    task_id: int
+    output_file: str
 
 
 class PromptAgentState(TypedDict):
-    presentation_name: str
     metrics: list[str]
     data_anlyze_result: str
 
@@ -34,12 +36,9 @@ class PromptAgentState(TypedDict):
 
 class DraftAgentState(TypedDict):
     flat_prompts: PromptList
-    data_anlyze_result: str
 
     tasks: list[tuple[int, PromptSlide]]
-    draft_slides: Annotated[
-        dict[int, Annotated[list[Json], operator.add]], merge_indexed_dict
-    ]  # Transitions to FinalJsonState (but flat without versions)
+    draft_slides: Annotated[dict[int, Json], merge_indexed_dict]
 
 
 class EditAgentState(TypedDict):
@@ -69,10 +68,19 @@ class FinalJsonState(TypedDict):
 
 
 class OverallState(TypedDict):
-    start_prompt: str
     presentation_name: str
-    data_anlyze_result: str
     metrics: list[str]
+    data_anlyze_result: str
     flat_prompts: PromptList
-    draft_slides: Annotated[dict[int, list[Json]], merge_indexed_dict]
-    final_slides: Annotated[dict[int, Json], merge_indexed_dict]
+    draft_slides: list[Json]
+    final_slides: dict[int, Json]
+
+    mode: Literal["start", "edit"]
+    edit_route: Literal["export", "edit"]
+
+    output_file: str
+
+    task_id: int
+    edit_prompt: str
+    current_slide: Json
+    recent_versions_history: list[Json]

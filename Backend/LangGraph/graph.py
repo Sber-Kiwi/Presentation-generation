@@ -1,7 +1,9 @@
 import asyncio
 
 from _save_stage import dev_cache
+from dto import GenerateFileOut, GenerateResponse, send_message, write_result
 from final_slide_generation.subgraph import build_final_json_subgraph
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from models import PromptList
@@ -17,6 +19,8 @@ from nodes import (
     prompt_prepare_tasks,
     prompt_route_tasks,
     review_and_edit,
+    route_after_edit,
+    route_by_mode,
     setupper,
     should_continue_metrics,
     sql_tool_node,
@@ -29,16 +33,18 @@ from state import (
     PromptAgentState,
 )
 
+checkpointer = MemorySaver()
+
 
 def build_metrics_graph() -> CompiledStateGraph:
     subgraph = StateGraph(MetricsAgentState)
-    subgraph.add_node("setup", setupper)
+    subgraph.add_node("setup_and_await", setupper)
     subgraph.add_node("data_agent", data_agent)
     subgraph.add_node("extract_metrics", metrics_splitter)
     subgraph.add_node("metrics_tools", sql_tool_node)
 
-    subgraph.add_edge(START, "setup")
-    subgraph.add_edge("setup", "data_agent")
+    subgraph.add_edge(START, "setup_and_await")
+    subgraph.add_edge("setup_and_await", "data_agent")
     subgraph.add_edge("metrics_tools", "data_agent")
     subgraph.add_conditional_edges(
         "data_agent",
@@ -91,14 +97,26 @@ def build_graph() -> CompiledStateGraph:
     graph.add_node("edit_agent", review_and_edit)
     graph.add_node("final_json_agent", run_final_json_agent)
 
-    graph.add_edge(START, "metrics_agent")
+    graph.add_conditional_edges(
+        START,
+        route_by_mode,
+        {
+            "generate": "metrics_agent",
+            "edit": "edit_agent",
+        },
+    )
+
     graph.add_edge("metrics_agent", "prompt_agent")
     graph.add_edge("prompt_agent", "draft_agent")
     graph.add_edge("draft_agent", "edit_agent")
-    graph.add_edge("edit_agent", "final_json_agent")
+    graph.add_conditional_edges(
+        "edit_agent",
+        route_after_edit,
+        {"final_json_agent": "final_json_agent", "edit_agent": "edit_agent"},
+    )
     graph.add_edge("final_json_agent", END)
 
-    return graph.compile()
+    return graph.compile(checkpointer=checkpointer)
 
 
 metrics_subgraph = build_metrics_graph()
@@ -110,24 +128,27 @@ final_json_subgraph = build_final_json_subgraph()
 @dev_cache("metrics")
 async def run_metrics_agent(state: OverallState) -> dict:
     sub_input: MetricsAgentState = {
-        "start_prompt": state["start_prompt"],
+        "start_prompt": "",
         "messages": [],
         "presentation_name": "",
         "metrics": [],
         "data_anlyze_result": "",
+        "task_id": -1,
+        "output_file": "",
     }
     result = await asyncio.to_thread(metrics_subgraph.invoke, sub_input)
     return {
         "presentation_name": result["presentation_name"],
         "metrics": result["metrics"],
         "data_anlyze_result": result["data_anlyze_result"],
+        "task_id": result["task_id"],
+        "output_file": result["output_file"],
     }
 
 
 @dev_cache("prompt")
 async def run_prompt_agent(state: OverallState) -> dict:
     sub_input: PromptAgentState = {
-        "presentation_name": state["presentation_name"],
         "metrics": state["metrics"],
         "tasks": [],
         "prompts": {},
@@ -144,19 +165,29 @@ async def run_draft_agent(state: OverallState) -> dict:
         "flat_prompts": state["flat_prompts"],
         "tasks": [],
         "draft_slides": {},
-        "data_anlyze_result": state["data_anlyze_result"],
     }
 
     result = await draft_subgraph.ainvoke(sub_input)
+
+    write_result(
+        GenerateFileOut(
+            presentation_name=state["presentation_name"],
+            drafts=result["draft_slides"],
+        ),
+        file=state["output_file"],
+    )
+
+    send_message(
+        GenerateResponse(task_id=state["task_id"], output_file=state["output_file"])
+    )
+
     return {"draft_slides": result["draft_slides"]}
 
 
 @dev_cache("final")
 async def run_final_json_agent(state: OverallState) -> dict:
-    drafts = {idx: draft_json[-1] for idx, draft_json in state["draft_slides"].items()}
-
     sub_input: FinalJsonState = {
-        "draft_slides": drafts,
+        "draft_slides": {idx: slide for idx, slide in enumerate(state["draft_slides"])},
         "final_slides": {},
         "tasks": [],
     }

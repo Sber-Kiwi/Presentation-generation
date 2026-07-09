@@ -248,15 +248,6 @@ JSON_SCHEMA_FINAL = {
             "properties": {
                 "meta": {
                     "properties": {
-                        "indicator": {
-                            "description": "Сохраняется "
-                            "из "
-                            "черновика. "
-                            "Генератором "
-                            "pptx не "
-                            "используется.",
-                            "type": "string",
-                        },
                         "notes": {"default": None, "type": ["string", "null"]},
                         "number": {
                             "description": "Порядковый "
@@ -277,7 +268,7 @@ JSON_SCHEMA_FINAL = {
                             "type": "string",
                         },
                     },
-                    "required": ["slide_id", "title", "number", "indicator"],
+                    "required": ["slide_id", "title", "number"],
                     "type": "object",
                 },
                 "objects": {
@@ -365,10 +356,11 @@ JSON_SCHEMA_FINAL = {
 
 
 if __name__ == "__main__":
-    from jsf import JSF
     from pprint import pformat
 
-    faker = JSF(JSON_SCHEMA_DRAFT)
+    from jsf import JSF
+
+    faker = JSF(JSON_SCHEMA_FINAL)
     example = faker.generate()
 
     py_dict_string = pformat(example, indent=4, width=120)

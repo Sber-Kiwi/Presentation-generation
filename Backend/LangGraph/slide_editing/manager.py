@@ -17,9 +17,9 @@ class EditRequestManager:
 
     async def submit(
         self,
-        slide_num: int,
         current_slide: DraftSlide,
         change_prompt: str,
+        versions: list[DraftSlide],
         on_complete,
     ) -> bool:
         async with self._lock:
@@ -32,14 +32,14 @@ class EditRequestManager:
                 sub_input: EditAgentState = {
                     "change_prompt": change_prompt,
                     "current_slide": current_slide,
-                    "slide_versions": [],
+                    "slide_versions": versions,
                     "messages": [],
                     "slide_changed": False,
                 }
                 result = await edit_subgraph.ainvoke(sub_input)
-                on_complete(slide_num, result["current_slide"], None)
+                on_complete(result["current_slide"], None)
             except Exception as e:
-                on_complete(slide_num, None, e)
+                on_complete(None, e)
             finally:
                 async with self._lock:
                     self._active -= 1

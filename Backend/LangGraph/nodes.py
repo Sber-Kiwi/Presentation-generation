@@ -1,4 +1,4 @@
-from asyncio import Semaphore, to_thread
+import asyncio
 
 import settings
 from constants.messages import (
@@ -9,9 +9,21 @@ from constants.messages import (
     SPLIT_INTO_LIST_MESSAGE,
 )
 from csv_preprocessor import analyze, convert_analyze_result_to_message
+from dto import (
+    EditFileIn,
+    EditFileOut,
+    EditResponse,
+    ExportFileIn,
+    InputAction,
+    OutputAction,
+    OutputError,
+    read_file_input,
+    send_message,
+    write_result,
+)
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.prebuilt import ToolNode
-from langgraph.types import Send
+from langgraph.types import Send, interrupt
 from llm_setup import (
     config_creative,
     config_strict,
@@ -20,9 +32,11 @@ from llm_setup import (
     llm_structured_prompts,
     llm_with_data_tools,
 )
-from models import Json, PresentationNameAndMetricsList, PromptList
+from models import PresentationNameAndMetricsList, PromptList
+from server_input import _read_json_line, _validate_body
 from settings import WORKERS_POOL_SIZE, call_llm, call_llm_sync
 from slide_editing.manager import EditRequestManager
+from sqlalchemy import ExceptionContext
 from state import (
     DraftAgentState,
     FinalJsonState,
@@ -36,11 +50,24 @@ from utils import (
     create_draft_json,
     normalize_draft_slides,
     parse_json_to_draft,
-    print_help,
-    print_slide,
 )
 
-semaphore = Semaphore(WORKERS_POOL_SIZE)
+MAX_METRIC_RETRIES = 2
+MAX_SLIDE_RETRIES = 2
+
+semaphore = asyncio.Semaphore(WORKERS_POOL_SIZE)
+
+edit_manager = EditRequestManager(WORKERS_POOL_SIZE)
+
+
+def _can_accept_request(action: InputAction) -> bool:
+    """Решает, готов ли сейчас граф принять запрос данного типа —
+    например, если менеджер редактирования уже занят max_concurrent
+    задачами, или граф сейчас не в состоянии, ожидающем этот action.
+    """
+    if action["action"] == "edit":
+        return edit_manager._active < edit_manager.max_concurrent
+    return True
 
 
 def setupper(state: MetricsAgentState) -> MetricsAgentState:
@@ -49,7 +76,28 @@ def setupper(state: MetricsAgentState) -> MetricsAgentState:
 
     analyze_result = analyze(settings.sql_data.to_df())
 
-    return {"data_anlyze_result": convert_analyze_result_to_message(analyze_result)}
+    while True:
+        edit_input = interrupt({"waiting_for": "generate_request"})
+
+        send_message(OutputAction(task_id=edit_input["task_id"], status="ready"))
+
+        body_payload = asyncio.run(_read_json_line(f"тело запроса для action=generate"))
+        try:
+            body = _validate_body(
+                body_payload,
+                InputAction(task_id=edit_input["task_id"], action="generate"),
+            )
+            break
+        except Exception as e:
+            send_message(OutputError(error_message="Wrong input format"))
+            continue
+
+    return {
+        "data_anlyze_result": convert_analyze_result_to_message(analyze_result),
+        "start_prompt": body["prompt"],
+        "task_id": edit_input["task_id"],
+        "output_file": body["output_file"],
+    }
 
 
 def data_agent(state: MetricsAgentState) -> dict:
@@ -81,9 +129,6 @@ def metrics_splitter(state: MetricsAgentState) -> dict:
         llm_structured_metrics, [system_message, data_message], config=config_strict
     )
 
-    # DEBUG
-    print(f"SELECTED METRICS: {response.metrics}")
-
     return {
         "metrics": response.metrics,
         "presentation_name": response.presentation_name,
@@ -96,19 +141,32 @@ def prompt_prepare_tasks(state: PromptAgentState) -> dict:
 
 async def generate_prompt(state: dict) -> dict:
     async with semaphore:
-        response: PromptList = await call_llm(
-            llm_structured_prompts,
-            [
-                SystemMessage(content=PROMPTS_SYSTEM_MESSAGE),
-                HumanMessage(
-                    content=f"ПОКАЗАТЕЛЬ: {state["metric"]}\n\n"
-                    f"ВЫБОРКА ВСПОМОГАТЕЛЬНЫХ ДАННЫХ ИЗ ТАБЛИЦЫ: {state['data_anlyze_result']}"
-                ),
-            ],
-            config=config_creative,
-        )
+        for attempt in range(MAX_METRIC_RETRIES + 1):
+            try:
+                response: PromptList = await call_llm(
+                    llm_structured_prompts,
+                    [
+                        SystemMessage(content=PROMPTS_SYSTEM_MESSAGE),
+                        HumanMessage(
+                            content=f"ПОКАЗАТЕЛЬ: {state['metric']}\n\n"
+                            f"ВЫБОРКА ВСПОМОГАТЕЛЬНЫХ ДАННЫХ ИЗ ТАБЛИЦЫ: {state['data_anlyze_result']}"
+                        ),
+                    ],
+                    config=config_creative,
+                )
+                return {"prompts": {state["idx"]: response}}
 
-        return {"prompts": {state["idx"]: response}}
+            except Exception as e:
+                print(
+                    f"[WARNING] Ошибка генерации промпта для показателя "
+                    f"'{state['metric']}' (попытка {attempt + 1}/{MAX_METRIC_RETRIES + 1}): {e}"
+                )
+                if attempt == MAX_METRIC_RETRIES:
+                    print(
+                        f"[SKIPPED] Показатель '{state['metric']}' пропущен "
+                        f"после {MAX_METRIC_RETRIES + 1} неудачных попыток."
+                    )
+                    return {"prompts": {}}
 
 
 def combine_prompts(state: PromptAgentState) -> PromptAgentState:
@@ -132,127 +190,128 @@ def draft_prepare_tasks(state: DraftAgentState) -> DraftAgentState:
 
 async def generate_draft(state: dict) -> dict:
     async with semaphore:
-        response = await call_llm(
-            llm_structured_drafts,
-            [
-                SystemMessage(
-                    content=f"{DRAFT_SYSTEM_MESSAGE}\n\n{OBJECT_TYPE_EXPLAIN_MESSAGE}"
-                ),
-                HumanMessage(
-                    content=f"ПРОМПТ ДЛЯ СЛАЙДА: {state["prompt"]}\n\n"
-                    # f"ВЫБОРКА ВСПОМОГАТЕЛЬНЫХ ДАННЫХ ИЗ ТАБЛИЦЫ: {state['data_anlyze_result']}"
-                ),
-            ],
-            config=config_creative,
-        )
+        for attempt in range(MAX_SLIDE_RETRIES + 1):
+            try:
+                response = await call_llm(
+                    llm_structured_drafts,
+                    [
+                        SystemMessage(
+                            content=f"{DRAFT_SYSTEM_MESSAGE}\n\n{OBJECT_TYPE_EXPLAIN_MESSAGE}"
+                        ),
+                        HumanMessage(
+                            content=f"ПРОМПТ ДЛЯ СЛАЙДА: {state['prompt']}\n\n"
+                            # f"ВЫБОРКА ВСПОМОГАТЕЛЬНЫХ ДАННЫХ ИЗ ТАБЛИЦЫ: {state['data_anlyze_result']}"
+                        ),
+                    ],
+                    config=config_creative,
+                )
+                return {"draft_slides": {state["idx"]: response}}
 
-        return {"draft_slides": {state["idx"]: response}}
+            except Exception as e:
+                print(
+                    f"[WARNING] Ошибка генерации черновика слайда для "
+                    f"idx={state['idx']} (попытка {attempt + 1}/{MAX_SLIDE_RETRIES + 1}): {e}"
+                )
+                if attempt == MAX_SLIDE_RETRIES:
+                    print(
+                        f"[SKIPPED] Слайд idx={state['idx']} пропущен "
+                        f"после {MAX_SLIDE_RETRIES + 1} неудачных попыток."
+                    )
+                    return {"draft_slides": {}}
 
 
 def combine_drafts(state: dict) -> DraftAgentState:
     drafts = normalize_draft_slides(state.get("draft_slides", {}))
 
     return {
-        "draft_slides": {
-            idx: [create_draft_json(slide)] for idx, slide in drafts.items()
-        }
+        "draft_slides": {idx: create_draft_json(slide) for idx, slide in drafts.items()}
     }
 
 
 async def review_and_edit(state: OverallState) -> dict:
-    draft_slides: dict[int, list[Json]] = state["draft_slides"]
-    manager = EditRequestManager(max_concurrent=WORKERS_POOL_SIZE)
-    slide_nums = sorted(draft_slides.keys())
-    current = slide_nums[0]
+    """Обрабатывает один запрос на изменение слайда от сервера.
+    Ограничивает число одновременно выполняемых запросов до
+    max_concurrent -- если лимит достигнут, немедленно возвращает
+    сообщение об ошибке без выполнения LLM-запроса.
+    """
+    action = interrupt({"waiting_for": "edit_request"})
 
-    def on_complete(slide_num, updated_slide, err):
+    if _can_accept_request(action):
+        send_message(OutputAction(task_id=action["task_id"], status="ready"))
+    else:
+        send_message(OutputAction(task_id=action["task_id"], status="notready"))
+        return {"route": "edit"}
+
+    body_payload = await _read_json_line(f"тело запроса для action={action["action"]}")
+    body = _validate_body(body_payload, action)
+
+    if action["action"] == "export":
+        return {
+            "task_id": action["task_id"],
+            "edit_route": "export",
+            "draft_slides": read_file_input(body["input_file"], "export").get(
+                "slides", {}
+            ),
+        }
+
+    # action["action"] == "edit"
+    body_payload = await _read_json_line("тело запроса для action=edit")
+    body = _validate_body(body_payload, action)
+
+    current_slide = parse_json_to_draft(body["current_slide"])
+    slide_versions = [
+        parse_json_to_draft(version)
+        for version in body.get("recent_versions_history", [])
+    ]
+    change_prompt = body["edit_prompt"]
+
+    result_holder: dict = {}
+    done_event = asyncio.Event()
+
+    def on_complete(updated_slide, err):
         if err:
-            print(f"\n[ERROR] Change request for slide {slide_num} failed: {err}")
+            result_holder["error"] = str(err)
         else:
-            draft_slides[slide_num] += [create_draft_json(updated_slide)]
-            print(f"\n[DONE] Slide {slide_num} updated.")
-        print(f"[slide {current}] > ", end="", flush=True)
+            result_holder["current_slide"] = updated_slide
+        done_event.set()
 
-    print_help()
-    print_slide(draft_slides[current][-1], current)
+    accepted = await edit_manager.submit(
+        current_slide=current_slide,
+        change_prompt=change_prompt,
+        versions=slide_versions,
+        on_complete=on_complete,
+    )
 
-    while True:
-        cmd = (await to_thread(input, f"[slide {current}] > ")).strip().lower()
+    if not accepted:
+        send_message(OutputAction(task_id=state["task_id"], status="rejected"))
+        return {"route": "edit"}
 
-        match cmd:
-            case "q" | "quit" | "exit" | "done":
-                pending = len(manager.pending_tasks)
-                if pending:
-                    print(
-                        f"Waiting for {pending} pending change request(s) to finish..."
-                    )
-                    await manager.wait_all()
-                break
+    send_message(OutputAction(task_id=state["task_id"], status="accepted"))
 
-            case "n" | "next":
-                idx = slide_nums.index(current)
-                current = slide_nums[min(idx + 1, len(slide_nums) - 1)]
-                print_slide(draft_slides[current][-1], current)
+    await done_event.wait()
 
-            case "p" | "prev":
-                idx = slide_nums.index(current)
-                current = slide_nums[max(idx - 1, 0)]
-                print_slide(draft_slides[current][-1], current)
+    if "error" in result_holder:
+        send_message(OutputError(error_message=result_holder["error"]))
+        return {"route": "edit"}
 
-            case cmd if cmd.startswith("goto "):
-                try:
-                    idx = int(cmd.split(" ", 1)[1])
-                    if idx in draft_slides:
-                        current = idx
-                        print_slide(draft_slides[current][-1], current)
-                    else:
-                        print("Invalid slide number.")
-                except ValueError:
-                    print("Usage: goto <index>")
+    write_result(
+        data=EditFileOut(
+            edited_slide=create_draft_json(result_holder["current_slide"])
+        ),
+        file=state["output_file"],
+    )
 
-            case "s" | "show":
-                print_slide(draft_slides[current][-1], current)
-
-            case "status" | "st":
-                print(
-                    f"Active: {manager._active}/{manager.max_concurrent}, "
-                    f"pending tasks: {len(manager.pending_tasks)}"
-                )
-
-            case cmd if cmd.startswith("edit "):
-                change_prompt = cmd[len("edit ") :].strip()
-                if not change_prompt:
-                    print("Empty change request ignored.")
-                    continue
-
-                accepted = await manager.submit(
-                    current,
-                    parse_json_to_draft(draft_slides[current][-1]),
-                    change_prompt,
-                    on_complete,
-                )
-
-                if accepted:
-                    print(
-                        f"Change request for slide {current} submitted "
-                        f"({manager._active}/{manager.max_concurrent} active)."
-                    )
-                else:
-                    print(
-                        f"[LIMIT REACHED] {manager.max_concurrent} concurrent edit requests "
-                        f"already running. Wait for one to finish and try again."
-                    )
-
-            case "h" | "?" | "help":
-                print_help()
-
-            case _:
-                print("Unknown command. Type 'help' for commands.")
-
-    return {"draft_slides": draft_slides}
+    send_message(
+        EditResponse(task_id=state["task_id"], output_file=state["output_file"])
+    )
+    return {"route": "edit"}
 
 
 # Edge decision
+def route_by_mode(state: OverallState) -> str:
+    return "edit" if state["mode"] == "edit" else "generate"
+
+
 def prompt_route_tasks(state: PromptAgentState) -> list[Send]:
     return [
         Send(
@@ -274,11 +333,16 @@ def draft_route_tasks(state: DraftAgentState) -> list[Send]:
             {
                 "idx": idx,
                 "prompt": build_promt_message(promptSlide),
-                "data_anlyze_result": state["data_anlyze_result"],
             },
         )
         for idx, promptSlide in state["tasks"]
     ]
+
+
+def route_after_edit(state: OverallState) -> str:
+    if state.get("route") == "export":
+        return "final_json_agent"
+    return "edit_agent"  # route == "edit" -> loop back, wait for next request
 
 
 def final_json_route_tasks(state: FinalJsonState) -> list[Send]:

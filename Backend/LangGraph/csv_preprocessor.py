@@ -172,8 +172,8 @@ def analyze_metric(metric_name: str, df_metric: pd.DataFrame) -> dict[str, Any]:
     can_line = num_periods >= LINE_MIN_PERIODS
     if can_line and num_subjects > 1:
         notes.append(
-            "Для line-графика по времени данные есть по нескольким субъектам РФ - "
-            "перед построением стоит зафиксировать один субъект/округ либо агрегировать (сумма/среднее)."
+            "line_chart: по времени данные есть по нескольким субъектам РФ, стоит"
+            " зафиксировать субъект/округ либо агрегировать"
         )
 
     # --- флаг BAR: нужно >= BAR_MIN_CATEGORIES сопоставимых категории по любому измерению ---
@@ -203,19 +203,18 @@ def analyze_metric(metric_name: str, df_metric: pd.DataFrame) -> dict[str, Any]:
                 pie_num_categories = best_count
             elif best_count > PIE_MAX_CATEGORIES:
                 notes.append(
-                    f"Pie может отображать данные за период '{best_period}', "
-                    f"но категорий слишком много ({best_count} > {PIE_MAX_CATEGORIES}) - нечитаемо."
+                    f"Категорий слишком много ({best_count} > {PIE_MAX_CATEGORIES}) - PIE нечитаемо."
                 )
     elif has_negative:
-        notes.append("В данных есть отрицательные значения - pie-диаграмма исключена.")
+        notes.append("Есть отрицательные значения - pie_chart исключена.")
 
     # --- флаг TABLE: почти всегда можно, но с заметкой про объём ---
     can_table = total_rows > 0
     table_recommended_pagination = total_rows > TABLE_ROWS_COMFORTABLE_LIMIT
     if table_recommended_pagination:
         notes.append(
-            f"Строк для таблицы много ({total_rows} > {TABLE_ROWS_COMFORTABLE_LIMIT}) - "
-            f"на одном слайде может не влезть, рассмотреть агрегацию или разбивку на несколько таблиц."
+            f"Строк для таблицы много ({total_rows} > {TABLE_ROWS_COMFORTABLE_LIMIT}), "
+            f"рассмотреть агрегацию или разбивку на несколько таблиц."
         )
 
     return {
