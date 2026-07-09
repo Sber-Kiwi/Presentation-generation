@@ -33,6 +33,7 @@ def parse_args():
 async def main() -> None:
     args = parse_args()
     agent: CompiledStateGraph = build_graph()
+    print("agent started")
     config = {"configurable": {"thread_id": "main-session"}}
 
     if args.file is None:

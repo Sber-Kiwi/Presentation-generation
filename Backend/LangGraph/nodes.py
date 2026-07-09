@@ -87,6 +87,7 @@ def setupper(state: MetricsAgentState) -> MetricsAgentState:
                 body_payload,
                 InputAction(task_id=edit_input["task_id"], action="generate"),
             )
+            send_message(OutputAction(task_id=state["task_id"], status="accepted"))
             break
         except Exception as e:
             send_message(OutputError(error_message="Wrong input format"))
@@ -235,6 +236,7 @@ async def review_and_edit(state: OverallState) -> dict:
     сообщение об ошибке без выполнения LLM-запроса.
     """
     action = interrupt({"waiting_for": "edit_request"})
+    state["task_id"] = action["task_id"]
 
     if _can_accept_request(action):
         send_message(OutputAction(task_id=action["task_id"], status="ready"))
@@ -246,6 +248,7 @@ async def review_and_edit(state: OverallState) -> dict:
     body = _validate_body(body_payload, action)
 
     if action["action"] == "export":
+        send_message(OutputAction(task_id=action["task_id"], status="accepted"))
         return {
             "task_id": action["task_id"],
             "edit_route": "export",
@@ -256,15 +259,13 @@ async def review_and_edit(state: OverallState) -> dict:
         }
 
     # action["action"] == "edit"
-    body_payload = await _read_json_line("тело запроса для action=edit")
-    body = _validate_body(body_payload, action)
-
-    current_slide = parse_json_to_draft(body["current_slide"])
+    input_data = read_file_input(body["input_file"], "edit")
+    current_slide = parse_json_to_draft(input_data["current_slide"])
     slide_versions = [
         parse_json_to_draft(version)
-        for version in body.get("recent_versions_history", [])
+        for version in input_data["recent_versions_history"]
     ]
-    change_prompt = body["edit_prompt"]
+    change_prompt = input_data["edit_prompt"]
 
     result_holder: dict = {}
     done_event = asyncio.Event()
@@ -276,6 +277,9 @@ async def review_and_edit(state: OverallState) -> dict:
             result_holder["current_slide"] = updated_slide
         done_event.set()
 
+    if _can_accept_request(action):
+        send_message(OutputAction(task_id=state["task_id"], status="accepted"))
+
     accepted = await edit_manager.submit(
         current_slide=current_slide,
         change_prompt=change_prompt,
@@ -286,8 +290,6 @@ async def review_and_edit(state: OverallState) -> dict:
     if not accepted:
         send_message(OutputAction(task_id=state["task_id"], status="rejected"))
         return {"edit_route": "edit"}
-
-    send_message(OutputAction(task_id=state["task_id"], status="accepted"))
 
     await done_event.wait()
 
