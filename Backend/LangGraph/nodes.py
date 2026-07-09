@@ -252,6 +252,7 @@ async def review_and_edit(state: OverallState) -> dict:
             "draft_slides": read_file_input(body["input_file"], "export").get(
                 "slides", {}
             ),
+            "output_file": body["output_file"],
         }
 
     # action["action"] == "edit"
@@ -340,9 +341,9 @@ def draft_route_tasks(state: DraftAgentState) -> list[Send]:
 
 
 def route_after_edit(state: OverallState) -> str:
-    if state.get("edit_route") == "export":
+    if state["edit_route"] == "export":
         return "final_json_agent"
-    return "edit_agent"  # route == "edit" -> loop back, wait for next request
+    return "edit_agent"
 
 
 def final_json_route_tasks(state: FinalJsonState) -> list[Send]:
