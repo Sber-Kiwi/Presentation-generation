@@ -13,6 +13,7 @@ public class Jsons {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer jsonID;
 
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String file;
 

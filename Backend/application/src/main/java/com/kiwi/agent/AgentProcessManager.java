@@ -21,7 +21,10 @@ public class AgentProcessManager {
 
     private static final long SESSION_TIMEOUT_MS = 15 * 60 * 1000;
 
-    private static final String SCRIPT_PATH = "../LangGraph/main.py";
+    private static final String SCRIPT_PATH = System.getenv().getOrDefault(
+            "PYTHON_SCRIPT_PATH",
+            "/Users/user/study/practice-2026/Presentation-generation/main.py"
+    );
 
     private final ConcurrentHashMap<Integer, AgentSession> sessions = new ConcurrentHashMap<>();
 

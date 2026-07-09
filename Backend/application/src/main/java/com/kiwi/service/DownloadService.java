@@ -95,19 +95,19 @@ public class DownloadService {
 
             Files.writeString(tempJsonPath, finalJson);
 
-            // TODO: paste real path to Python script
             ProcessBuilder pb = new  ProcessBuilder(
-                    "python",
-                    "path/pptx_generator.py",
+                    "python3",
+                    "/app/Backend/PPTX_gen/pptx_generator.py",
                     tempJsonPath.toAbsolutePath().toString(),
                     tempPptxPath.toAbsolutePath().toString()
             );
             pb.redirectErrorStream(true);
             Process process = pb.start();
+            String processOutput = new String(process.getInputStream().readAllBytes());
             int exitCode = process.waitFor();
 
             if (exitCode != 0) {
-                throw new RuntimeException("Python process exited with code " + exitCode);
+                throw new RuntimeException("Python process exited with code " + exitCode + ". Output: " + processOutput);
             }
 
             byte[] pptxBytes = Files.readAllBytes(tempPptxPath);

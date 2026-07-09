@@ -37,6 +37,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDto> handleException(Exception e) {
+        e.printStackTrace();
         return ResponseEntity.status(500).body(new ErrorDto("INTERNAL_SERVER_ERROR", e.getMessage()));
     }
 

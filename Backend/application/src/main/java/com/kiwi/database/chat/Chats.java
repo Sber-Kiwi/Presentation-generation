@@ -33,9 +33,9 @@ public class Chats {
     @JoinColumn(name = "jsonID", unique = true)
     private Jsons json;
 
-    @OneToOne(mappedBy = "chat", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL)
     @JsonIgnore
-    private Tasks task;
+    private List<Tasks> tasks = new ArrayList<>();
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
@@ -89,12 +89,12 @@ public class Chats {
         this.json = json;
     }
 
-    public Tasks getTask() {
-        return task;
+    public List<Tasks> getTasks() {
+        return tasks;
     }
 
-    public void setTask(Tasks task) {
-        this.task = task;
+    public void setTasks(List<Tasks> tasks) {
+        this.tasks = tasks;
     }
 
     public List<Slides> getSlides() {
@@ -109,11 +109,11 @@ public class Chats {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Chats chats = (Chats) o;
-        return Objects.equals(chatID, chats.chatID) && Objects.equals(title, chats.title) && Objects.equals(prompt, chats.prompt) && Objects.equals(user, chats.user) && Objects.equals(csv, chats.csv) && Objects.equals(json, chats.json) && Objects.equals(task, chats.task) && Objects.equals(slides, chats.slides);
+        return Objects.equals(chatID, chats.chatID) && Objects.equals(title, chats.title) && Objects.equals(prompt, chats.prompt) && Objects.equals(user, chats.user) && Objects.equals(csv, chats.csv) && Objects.equals(json, chats.json) && Objects.equals(tasks, chats.tasks) && Objects.equals(slides, chats.slides);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(chatID, title, prompt, user, csv, json, task, slides);
+        return Objects.hash(chatID, title, prompt, user, csv, json, tasks, slides);
     }
 }

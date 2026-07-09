@@ -15,13 +15,14 @@ public class Versions {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer versionID;
     private String prompt;
-    private Boolean isFinal;
+    private Boolean isFinal = false;
 
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String json;
 
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", nullable = false)
-    private OffsetDateTime createdAt;
+    private OffsetDateTime createdAt = OffsetDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "slideID", nullable = false)

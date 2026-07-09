@@ -59,8 +59,10 @@ public class AgentService {
     @Async
     @Transactional
     public void runTask(Integer taskDBID) {
+        log.info("runTask started for taskDBID: {}", taskDBID);
         Tasks task = tasksRepository.findById(taskDBID).orElse(null);
         if (task == null) {
+            log.warn("runTask aborted: task {} not found", taskDBID);
             return;
         }
 
@@ -145,6 +147,7 @@ public class AgentService {
                     Versions version = new Versions();
                     version.setSlide(savedSlide);
                     version.setJson(json.toString());
+                    version.setPrompt("Initial generation");
                     versionsRepository.save(version);
                 }
             }
@@ -153,6 +156,7 @@ public class AgentService {
                 Versions newVersion = new Versions();
                 newVersion.setSlide(oldVersion.getSlide());
                 newVersion.setJson(resultData.toString());
+                newVersion.setPrompt(task.getPrompt());
                 versionsRepository.save(newVersion);
             }
             else if (task.getType() == 2) {

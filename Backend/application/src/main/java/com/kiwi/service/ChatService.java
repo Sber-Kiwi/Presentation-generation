@@ -85,7 +85,14 @@ public class ChatService {
         task.setPrompt(startQueryDto.getPrompt());
         Tasks savedTask = tasksRepository.save(task);
 
-        agentService.runTask(savedTask.getTaskID());
+        org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+            new org.springframework.transaction.support.TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    agentService.runTask(savedTask.getTaskID());
+                }
+            }
+        );
 
 
         JobResponseDto jobResponseDto = new JobResponseDto();

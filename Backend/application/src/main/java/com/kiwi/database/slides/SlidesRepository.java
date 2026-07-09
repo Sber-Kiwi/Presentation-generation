@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.List;
 
 public interface SlidesRepository extends JpaRepository<Slides, Integer> {
+
     Optional<Slides> findBySlideIDAndChat_ChatID(Integer slideID, Integer chatID);
+
     List<Slides> findByChat(Chats chat);
 }
