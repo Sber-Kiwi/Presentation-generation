@@ -11,3 +11,6 @@ langchain-mistralai
 duckdb
 
 sqlparse
+
+python-pptx
+lxml
