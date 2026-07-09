@@ -45,7 +45,6 @@ function buildFakeSlide(index, prompt) {
         versionID,
         slide: {
           meta: {
-            slide_id: nextId("sld"),
             title:
               index === 0
                 ? `Презентация: ${prompt.slice(0, 40)}`
@@ -54,8 +53,9 @@ function buildFakeSlide(index, prompt) {
           },
           objects: [
             {
+              object_id: nextId("obj"),
               type: OBJECT_TYPES[index % OBJECT_TYPES.length],
-              text: `Автосгенерированный блок ${index + 1}`,
+              data_description: `Автосгенерированный блок ${index + 1}`,
               cell_pos: { x: 1, y: 1 },
               span: { x: 4, y: 2 },
             },
@@ -85,6 +85,18 @@ export function buildFakeChat(prompt, fileName) {
   };
 }
 
+// Имитация создания версии слайда после drag-and-drop: сервер просто
+// принимает присланное расположение объектов и заводит под него новую
+// версию (в реальном бэкенде тут может быть валидация/нормализация).
+export function buildDraggedVersion(slideContent) {
+  const versionID = nextId("version");
+  return {
+    versionID,
+    slide: clone(slideContent),
+    createdAt: new Date().toISOString(),
+  };
+}
+
 // Имитация правки слайда: клонируем текущую версию и добавляем в неё
 // текстовый блок с содержимым правки, чтобы результат было видно на экране.
 export function buildEditedVersion(baseVersion, prompt) {
@@ -92,8 +104,9 @@ export function buildEditedVersion(baseVersion, prompt) {
   const clonedSlide = clone(baseVersion.slide);
   clonedSlide.meta.notes = `Правка: ${prompt.slice(0, 80)}`;
   clonedSlide.objects.push({
-    type: "TEXT_BOX",
-    text: prompt.slice(0, 60),
+    object_id: nextId("obj"),
+    type: "TEXT",
+    data_description: prompt.slice(0, 60),
     cell_pos: { x: 1, y: 3 },
     span: { x: 4, y: 1 },
   });

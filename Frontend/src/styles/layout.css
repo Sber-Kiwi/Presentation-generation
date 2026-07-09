@@ -224,6 +224,209 @@
 
 .grid-item {
   z-index: 2;
+  position: relative;
+  user-select: none;
+  touch-action: none;
+  cursor: grab;
+  border: 2px solid #333;
+  border-radius: 4px;
+  background-color: #fff;
+  overflow: hidden;
+}
+
+.grid-item-locked {
+  cursor: default;
+}
+
+.grid-item-content {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  text-align: center;
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.grid-item-title {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+.grid-item-text {
+  font-size: 13px;
+  line-height: 1.35;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+/* Пока идёт перетаскивание/ресайз — приподнимаем объект над остальными
+   и делаем его полупрозрачным, чтобы сквозь него было видно фоновые
+   ячейки сетки. Заодно зелёная рамка = место назначения свободно. */
+.grid-item-interacting {
+  z-index: 10;
+  opacity: 0.55;
+  cursor: grabbing;
+  border-color: #2e7d32 !important;
+}
+
+/* Объект встанет ровно на место другого объекта — при отпускании они
+   поменяются местами. Ghost-копия обеих сторон обмена подсвечивается
+   этим же классом. */
+.grid-item-swap {
+  border-color: #1565c0 !important;
+  border-style: dashed !important;
+}
+
+/* Место занято (и это не "чистый" обмен) — при отпускании перемещение
+   отменится. */
+.grid-item-invalid {
+  border-color: #c62828 !important;
+  border-style: dashed !important;
+}
+
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #333;
+  border: 1px solid #fff;
+  border-radius: 2px;
+  z-index: 11;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.grid-item:hover .resize-handle,
+.grid-item-interacting .resize-handle {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.resize-handle-n,
+.resize-handle-s {
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+.resize-handle-e,
+.resize-handle-w {
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+.resize-handle-n {
+  top: -5px;
+}
+.resize-handle-s {
+  bottom: -5px;
+}
+.resize-handle-w {
+  left: -5px;
+}
+.resize-handle-e {
+  right: -5px;
+}
+.resize-handle-nw {
+  top: -5px;
+  left: -5px;
+  cursor: nwse-resize;
+}
+.resize-handle-se {
+  bottom: -5px;
+  right: -5px;
+  cursor: nwse-resize;
+}
+.resize-handle-ne {
+  top: -5px;
+  right: -5px;
+  cursor: nesw-resize;
+}
+.resize-handle-sw {
+  bottom: -5px;
+  left: -5px;
+  cursor: nesw-resize;
+}
+
+/* Бейдж-кнопка для типов, которые можно поменять (BAR/LINE/PIE_CHART). */
+.type-badge-clickable {
+  border: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.type-badge-clickable:hover {
+  filter: brightness(1.1);
+}
+
+/* Выпадающее меню смены типа — рендерится порталом в <body>, поэтому
+   позиционируется через position: fixed и координаты из JS. */
+.type-menu {
+  position: fixed;
+  z-index: 1000;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.type-menu-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #222;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.type-menu-option:hover {
+  background: #f0f0f0;
+}
+
+.type-menu-option-active {
+  background: #e8e8e8;
+}
+
+.type-menu-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .edit {

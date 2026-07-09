@@ -10,6 +10,7 @@ import {
   nextId,
   buildFakeChat,
   buildEditedVersion,
+  buildDraggedVersion,
 } from "./mockData";
 import { sleep } from "./poll";
 
@@ -168,16 +169,28 @@ export const mockApi = {
     return { ...JSON.parse(JSON.stringify(version)), slideID: slideId };
   },
 
-  // Drag-and-drop на фронте пока не реализован — это заглушка, которая
-  // просто "принимает" версию слайда, ничего не делая на сервере.
+  // По спеке backend.yaml это fire-and-forget: фронт получает 202 и не
+  // поллит статус. Поэтому в отличие от createSlideEdit тут нет отдельной
+  // асинхронной задачи с pending/processing — просто принимаем версию.
   async createSlideVersion(chatId, slideId, versionPayload) {
     await sleep(200);
-    console.log(
-      "[mock] createSlideVersion (drag-and-drop) — заглушка:",
-      chatId,
-      slideId,
-      versionPayload,
-    );
+    const slide = findSlide(chatId, slideId);
+    if (!slide) {
+      throw new ApiError("Слайд не найден", {
+        status: 404,
+        code: "NOT_FOUND",
+      });
+    }
+    if (!versionPayload?.slide) {
+      throw new ApiError("Не передано содержимое слайда", {
+        status: 422,
+        code: "VALIDATION_ERROR",
+      });
+    }
+
+    const newVersion = buildDraggedVersion(versionPayload.slide);
+    slide.versions.push(newVersion);
+
     return { chatID: chatId, taskID: null };
   },
 

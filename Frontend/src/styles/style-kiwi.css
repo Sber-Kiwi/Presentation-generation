@@ -196,6 +196,37 @@
   background: var(--kiwi-cream) !important;
 }
 
+.resize-handle {
+  background: var(--kiwi-skin);
+}
+
+.type-menu {
+  background: var(--kiwi-cream);
+  border-color: var(--kiwi-skin);
+}
+
+.type-menu-option {
+  color: var(--kiwi-seed);
+}
+
+.type-menu-option:hover {
+  background: var(--kiwi-flesh-light);
+}
+
+.type-menu-option-active {
+  background: var(--kiwi-flesh-light);
+}
+
+.grid-item-interacting {
+  border-color: var(--kiwi-flesh-dark) !important;
+  background: var(--kiwi-flesh-light) !important;
+}
+
+.grid-item-invalid {
+  border-color: var(--kiwi-error) !important;
+  background: var(--kiwi-error-bg) !important;
+}
+
 /* ===========================================================
    ПОЛЕ ПРАВОК 
    =========================================================== */

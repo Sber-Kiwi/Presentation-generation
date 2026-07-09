@@ -14,6 +14,7 @@ export default function SlideArea({
   onSubmitEdit,
   isEditing,
   editError,
+  onObjectsChange,
 }) {
   const currentIndex = slides.findIndex((s) => s.slideID === selectedSlideId);
   const currentActualIndex = currentIndex !== -1 ? currentIndex : 0;
@@ -55,7 +56,11 @@ export default function SlideArea({
           onInPresentationChange={onInPresentationChange}
           currentVersionId={currentVersion?.versionID}
         />
-        <SlideDraft draft={currentVersion} disabled={isEditing} />
+        <SlideDraft
+          draft={currentVersion}
+          disabled={isEditing}
+          onObjectsChange={onObjectsChange}
+        />
         <SlideEdit
           value={editValue}
           onChange={onEditChange}

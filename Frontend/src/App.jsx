@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Sidebar from "./components/Sidebar";
 import StartChat from "./components/StartChat";
 import MainContent from "./components/MainContent";
@@ -26,9 +26,15 @@ export default function App() {
   const [loadingChatSlides, setLoadingChatSlides] = useState(false);
   const [chatLoadError, setChatLoadError] = useState(null);
 
-  // Единый "блокирующий" оверлей на весь экран: используется и для
-  // генерации презентации, и для экспорта (по требованиям задания это
-  // один и тот же вид загрузки).
+  // Ссылка на текущий экземпляр MainContent — через неё дёргаем отправку
+  // накопленных drag-and-drop изменений (см. flushMainContentChanges ниже).
+  const mainContentRef = useRef(null);
+
+  const currentSlidesRef = useRef(currentSlides);
+  useEffect(() => {
+    currentSlidesRef.current = currentSlides;
+  }, [currentSlides]);
+
   const [blocking, setBlocking] = useState({ active: false, messages: [] });
 
   const [startChatError, setStartChatError] = useState(null);
@@ -38,8 +44,6 @@ export default function App() {
   const notify = (text, type = "info") =>
     setNotice({ text, type, key: Date.now() });
 
-  // 1. GET /chats при запуске приложения — пока список не загружен,
-  // крутим загрузку на весь экран.
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -63,25 +67,25 @@ export default function App() {
     };
   }, []);
 
-  // Заглушка для будущего drag-and-drop: перед сохранением презентации и
-  // перед сменой чата нужно будет отправить накопленные изменения позиций
-  // объектов на слайдах через POST /chats/{chatID}/slides/{slideID}/versions.
-  async function flushPendingDragChanges(chatId, slides) {
-    void chatId;
-    void slides;
-    // TODO: когда появится drag-and-drop, пройтись по слайдам с
-    // несохранёнными изменениями расположения объектов и вызвать
-    // api.createSlideVersion(chatId, slideId, versionPayload) для каждого.
+  async function flushMainContentChanges() {
+    try {
+      await mainContentRef.current?.flushPendingChanges();
+    } catch (_err) {
+      // Ошибки по отдельным слайдам уже показаны пользователю через notify
+      // внутри MainContent — здесь дальше можно спокойно продолжать
+      // (сохранение/переход не должны намертво блокироваться).
+    }
   }
 
-  // 4. Клик по чату в сайдбаре — подгружаем информацию о чате (или берём
-  // из кэша, если уже открывали его в этой сессии).
   async function handleSelectChat(newChatId) {
     if (blocking.active || newChatId === selectedChatId) return;
 
     if (selectedChatId !== "new" && currentSlides.length > 0) {
-      setSlidesCache((prev) => ({ ...prev, [selectedChatId]: currentSlides }));
-      await flushPendingDragChanges(selectedChatId, currentSlides);
+      await flushMainContentChanges();
+      setSlidesCache((prev) => ({
+        ...prev,
+        [selectedChatId]: currentSlidesRef.current,
+      }));
     }
 
     setSelectedChatId(newChatId);
@@ -113,8 +117,6 @@ export default function App() {
     }
   }
 
-  // 2. Отправка стартового запроса: POST /chats -> ждём статус ->
-  // GET /chats/{chatID} и открываем готовый чат.
   async function handleCreateChat(prompt, file) {
     setStartChatError(null);
     try {
@@ -158,8 +160,6 @@ export default function App() {
     }
   }
 
-  // 8-10. Сохранение презентации: POST /downloads -> ждём статус ->
-  // GET /downloads (скачиваем zip).
   async function handleSave() {
     if (selectedChatId === "new" || currentSlides.length === 0) return;
 
@@ -170,12 +170,11 @@ export default function App() {
     }
 
     setSaveError(null);
-    await flushPendingDragChanges(selectedChatId, currentSlides);
+    await flushMainContentChanges();
 
-    // В backend.yaml SlideState не содержит slideID (недоработка спеки) —
-    // добавляем его сами, чтобы бэкенд понимал, к какому слайду относится
-    // каждый статус.
-    const slideStates = currentSlides.map((s) => ({
+    const freshSlides = currentSlidesRef.current;
+
+    const slideStates = freshSlides.map((s) => ({
       slideID: s.slideID,
       selectedVersionID: s.state.selectedVersionID,
       inPresentation: s.state.inPresentation,
@@ -193,8 +192,6 @@ export default function App() {
         ],
       });
 
-      // Обратите внимание: GET .../downloads/status не принимает  в
-      // пути (см. backend.yaml), поэтому опрашиваем именно по chatID.taskID
       const finalStatus = await pollUntilTerminal(
         () => api.getDownloadStatus(selectedChatId),
         { intervalMs: POLL_INTERVAL_MS },
@@ -224,7 +221,6 @@ export default function App() {
     setIsOpen(!isOpen);
   };
 
-  // 1. Пока GET /chats не завершился — крутим загрузку на весь экран.
   if (chatsLoading) {
     return <BlockingLoader messages={["Загружаем историю чатов..."]} />;
   }
@@ -261,6 +257,7 @@ export default function App() {
         currentSlides.length > 0 && (
           <MainContent
             key={selectedChatId}
+            ref={mainContentRef}
             chatId={selectedChatId}
             chatTitle={currentChat?.title}
             slides={currentSlides}
@@ -274,7 +271,6 @@ export default function App() {
 
       {saveError && <p className="error-text global-error">{saveError}</p>}
 
-      {/* 3, 9. Полноэкранная загрузка на время генерации чата / экспорта. */}
       {blocking.active && <BlockingLoader messages={blocking.messages} />}
       <Notification notice={notice} onClose={() => setNotice(null)} />
     </>

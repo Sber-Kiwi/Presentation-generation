@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 
 // Полноэкранный оверлей загрузки: перекрывает всё приложение и не даёт
 // ничего нажать, пока идёт генерация / правка / экспорт.
-// TODO: когда появится дизайн, заменить .spinner на gif в центре —
-// разметка и смена подписей уже готовы для этого (messages).
 export default function BlockingLoader({ messages = ["Загрузка..."] }) {
   const [index, setIndex] = useState(0);
 

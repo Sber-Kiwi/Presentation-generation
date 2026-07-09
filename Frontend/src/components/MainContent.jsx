@@ -1,23 +1,30 @@
-import { useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import SlideArea from "./SlideArea";
 import VersionsPanel from "./VersionsPanel";
 import { api, pollUntilTerminal, POLL_INTERVAL_MS } from "../api";
 
-export default function MainContent({
-  chatId,
-  chatTitle,
-  slides,
-  setSlides,
-  onSave,
-  globalBusy,
-  notify,
-}) {
+const MainContent = forwardRef(function MainContent(
+  { chatId, chatTitle, slides, setSlides, onSave, globalBusy, notify },
+  ref,
+) {
   const [selectedSlideId, setSelectedSlideId] = useState(slides[0]?.slideID);
 
-  // У каждого слайда — своё поле для правок и свой статус выполнения.
   const [editDrafts, setEditDrafts] = useState({});
   const [editingSlideIds, setEditingSlideIds] = useState(() => new Set());
   const [editErrors, setEditErrors] = useState({});
+
+  const slidesRef = useRef(slides);
+  useEffect(() => {
+    slidesRef.current = slides;
+  }, [slides]);
+
+  const dirtySlideIdsRef = useRef(new Set());
 
   const currentSlide = slides.find(
     (slide) => slide.slideID === selectedSlideId,
@@ -28,13 +35,74 @@ export default function MainContent({
   );
 
   const isCurrentSlideEditing = editingSlideIds.has(selectedSlideId);
-  // Пока правится хотя бы один слайд, кнопка "Сохранить презентацию"
-  // заблокирована для всего чата.
+
   const isAnySlideEditing = editingSlideIds.size > 0;
 
   const hasUnappliedEdit = Object.values(editDrafts).some(
     (text) => (text || "").trim().length > 0,
   );
+
+  function toSlideVersionPayload(version) {
+    return {
+      versionID: version.versionID,
+      slide: {
+        meta: {
+          title: version.slide?.meta?.title ?? null,
+          notes: version.slide?.meta?.notes ?? null,
+        },
+        objects: version.slide?.objects ?? [],
+      },
+      createdAt: version.createdAt,
+    };
+  }
+
+  // Отправляет накопленные drag-and-drop изменения одного слайда на бэкенд
+  // как новую версию: POST .../versions.
+  async function flushSlideVersion(slideId) {
+    if (!dirtySlideIdsRef.current.has(slideId)) return;
+
+    const slide = slidesRef.current.find((s) => s.slideID === slideId);
+    const versionId = slide?.state?.selectedVersionID;
+    const version = slide?.versions.find((v) => v.versionID === versionId);
+    if (!slide || !version) {
+      dirtySlideIdsRef.current.delete(slideId);
+      return;
+    }
+
+    try {
+      await api.createSlideVersion(
+        chatId,
+        slideId,
+        toSlideVersionPayload(version),
+      );
+      dirtySlideIdsRef.current.delete(slideId);
+    } catch (err) {
+      notify?.(
+        err.message ||
+          "Не удалось отправить расположение объектов на слайде. Изменения будут отправлены позже.",
+        "error",
+      );
+      throw err;
+    }
+  }
+
+  // Отправляет несохранённые изменения по всем слайдам сразу. Используется
+  // перед сохранением презентации и перед переходом в другой чат.
+  async function flushAllPendingVersions() {
+    const idsToFlush = Array.from(dirtySlideIdsRef.current);
+    for (const slideId of idsToFlush) {
+      try {
+        await flushSlideVersion(slideId);
+      } catch (_err) {
+        // Ошибка уже показана пользователю внутри flushSlideVersion —
+        // продолжаем со следующим слайдом, не прерывая общий флаш.
+      }
+    }
+  }
+
+  useImperativeHandle(ref, () => ({
+    flushPendingChanges: flushAllPendingVersions,
+  }));
 
   const handleSaveClick = () => {
     if (hasUnappliedEdit) {
@@ -75,6 +143,32 @@ export default function MainContent({
     );
   };
 
+  // Drag-and-drop в SlideDraft меняет расположение объектов только внутри
+  // выбранной сейчас версии выбранного сейчас слайда — пишем изменения
+  // туда же, откуда currentVersion.slide.objects был прочитан, и помечаем
+  // слайд "грязным": на бэкенд эти изменения уйдут отдельной версией только
+  // при сохранении презентации, отправке правки или смене чата.
+  const handleObjectsChange = (newObjects) => {
+    const slideId = selectedSlideId;
+    dirtySlideIdsRef.current.add(slideId);
+    setSlides((prevSlides) =>
+      prevSlides.map((slide) => {
+        if (slide.slideID !== slideId) return slide;
+        return {
+          ...slide,
+          versions: slide.versions.map((version) =>
+            version.versionID === selectedVersionId
+              ? {
+                  ...version,
+                  slide: { ...version.slide, objects: newObjects },
+                }
+              : version,
+          ),
+        };
+      }),
+    );
+  };
+
   const handleEditDraftChange = (slideId, text) => {
     setEditDrafts((prev) => ({ ...prev, [slideId]: text }));
   };
@@ -84,14 +178,22 @@ export default function MainContent({
     // Кнопка отправки правки недоступна, если поле пустое.
     if (!prompt || editingSlideIds.has(slideId) || globalBusy) return;
 
-    const slide = slides.find((s) => s.slideID === slideId);
-    const versionID = slide?.state?.selectedVersionID;
-    const baseVersion = slide?.versions.find((v) => v.versionID === versionID);
-
     setEditErrors((prev) => ({ ...prev, [slideId]: null }));
     setEditingSlideIds((prev) => new Set(prev).add(slideId));
 
     try {
+      // Если пользователь до этого подвигал объекты на слайде и не сохранил
+      // презентацию — сначала отправляем эти изменения отдельной версией
+      // (fire-and-forget, без ожидания ответа), чтобы бэкенд знал о них
+      // раньше правки. selectedVersionID при этом не меняется.
+      await flushSlideVersion(slideId);
+
+      const slide = slidesRef.current.find((s) => s.slideID === slideId);
+      const versionID = slide?.state?.selectedVersionID;
+      const baseVersion = slide?.versions.find(
+        (v) => v.versionID === versionID,
+      );
+
       const { taskID } = await api.createSlideEdit(chatId, slideId, {
         prompt,
         versionID,
@@ -171,6 +273,7 @@ export default function MainContent({
           onSubmitEdit={() => handleSubmitEdit(selectedSlideId)}
           isEditing={isCurrentSlideEditing}
           editError={editErrors[selectedSlideId]}
+          onObjectsChange={handleObjectsChange}
         />
         <VersionsPanel
           versions={currentSlide.versions}
@@ -183,4 +286,6 @@ export default function MainContent({
       </div>
     </div>
   );
-}
+});
+
+export default MainContent;
