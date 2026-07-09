@@ -12,6 +12,7 @@ services:
       - "5432:5432"
     volumes:
       - ./Database Content/create and filling scripts/create_scripts.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
   backend:
@@ -41,3 +42,6 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  postgres_data:
