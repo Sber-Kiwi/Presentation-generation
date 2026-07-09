@@ -1,9 +1,13 @@
-export default function SlideDraft({ draft }) {
+export default function SlideDraft({ draft, disabled }) {
   const title = draft?.slide?.meta?.title;
   const objects = draft?.slide?.objects ?? [];
 
   return (
-    <div id="draft" className="draft">
+    <div
+      id="draft"
+      className={`draft ${disabled ? "draft-disabled" : ""}`}
+      aria-busy={disabled || undefined}
+    >
       <div id="slide-title" className="slide-title">
         {title}
       </div>

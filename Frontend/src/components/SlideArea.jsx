@@ -55,7 +55,7 @@ export default function SlideArea({
           onInPresentationChange={onInPresentationChange}
           currentVersionId={currentVersion?.versionID}
         />
-        <SlideDraft draft={currentVersion} />
+        <SlideDraft draft={currentVersion} disabled={isEditing} />
         <SlideEdit
           value={editValue}
           onChange={onEditChange}

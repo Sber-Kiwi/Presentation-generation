@@ -1,4 +1,10 @@
-export default function SlideEdit({ value, onChange, onSubmit, disabled, error }) {
+export default function SlideEdit({
+  value,
+  onChange,
+  onSubmit,
+  disabled,
+  error,
+}) {
   // Нельзя нажать кнопку отправки, если поле пустое или правка уже выполняется.
   const canSend = !disabled && value.trim().length > 0;
 
@@ -36,8 +42,13 @@ export default function SlideEdit({ value, onChange, onSubmit, disabled, error }
           }}
         />
       </div>
-      {disabled && <p className="hint-text">Слайд обновляется, подождите...</p>}
-      {error && <p className="error-text">{error}</p>}
+      <div className="edit-status">
+        {disabled ? (
+          <p className="hint-text">Слайд обновляется, подождите...</p>
+        ) : error ? (
+          <p className="error-text">{error}</p>
+        ) : null}
+      </div>
     </div>
   );
 }

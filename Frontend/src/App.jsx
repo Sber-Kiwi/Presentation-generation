@@ -3,6 +3,7 @@ import Sidebar from "./components/Sidebar";
 import StartChat from "./components/StartChat";
 import MainContent from "./components/MainContent";
 import BlockingLoader from "./components/BlockingLoader";
+import Notification from "./components/Notification";
 import {
   api,
   pollUntilTerminal,
@@ -32,6 +33,10 @@ export default function App() {
 
   const [startChatError, setStartChatError] = useState(null);
   const [saveError, setSaveError] = useState(null);
+
+  const [notice, setNotice] = useState(null);
+  const notify = (text, type = "info") =>
+    setNotice({ text, type, key: Date.now() });
 
   // 1. GET /chats при запуске приложения — пока список не загружен,
   // крутим загрузку на весь экран.
@@ -158,6 +163,12 @@ export default function App() {
   async function handleSave() {
     if (selectedChatId === "new" || currentSlides.length === 0) return;
 
+    const includedSlides = currentSlides.filter((s) => s.state.inPresentation);
+    if (includedSlides.length === 0) {
+      notify("Вы не можете сохранить пустую презентацию.", "error");
+      return;
+    }
+
     setSaveError(null);
     await flushPendingDragChanges(selectedChatId, currentSlides);
 
@@ -197,6 +208,7 @@ export default function App() {
 
       const { blob, filename } = await api.downloadFile(selectedChatId);
       saveBlobAsFile(blob, filename);
+      notify("Презентация успешно загружена на устройство.", "success");
     } catch (err) {
       setSaveError(err.message || "Не удалось сохранить презентацию");
     } finally {
@@ -255,6 +267,7 @@ export default function App() {
             setSlides={setCurrentSlides}
             onSave={handleSave}
             globalBusy={blocking.active}
+            notify={notify}
           />
         )
       )}
@@ -263,6 +276,7 @@ export default function App() {
 
       {/* 3, 9. Полноэкранная загрузка на время генерации чата / экспорта. */}
       {blocking.active && <BlockingLoader messages={blocking.messages} />}
+      <Notification notice={notice} onClose={() => setNotice(null)} />
     </>
   );
 }

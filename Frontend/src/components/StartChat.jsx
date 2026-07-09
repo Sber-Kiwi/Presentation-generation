@@ -32,7 +32,23 @@ export default function StartChat({ onSubmit, disabled, error }) {
   };
 
   const handleSubmit = () => {
-    if (!canSend) return;
+    if (disabled) return;
+    const hasPrompt = prompt.trim().length > 0;
+    const hasFile = !!file;
+
+    if (!hasPrompt && !hasFile) {
+      setLocalError("Добавьте текст запроса и CSV-файл.");
+      return;
+    }
+    if (!hasPrompt) {
+      setLocalError("Добавьте текст запроса.");
+      return;
+    }
+    if (!hasFile) {
+      setLocalError("Добавьте CSV-файл.");
+      return;
+    }
+
     setLocalError(null);
     onSubmit(prompt.trim(), file);
   };

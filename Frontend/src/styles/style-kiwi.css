@@ -182,6 +182,11 @@
   border-radius: 14px;
 }
 
+.draft-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .grid-item-bg {
   border-color: var(--kiwi-skin);
 }
@@ -261,6 +266,20 @@
   background: var(--kiwi-error-bg);
   border-radius: 10px;
   margin: 8px 20px 0;
+}
+
+.notification {
+  color: var(--kiwi-cream);
+  box-shadow: var(--kiwi-shadow);
+}
+.notification-success {
+  background: var(--kiwi-flesh-dark);
+}
+.notification-error {
+  background: var(--kiwi-error);
+}
+.notification-info {
+  background: var(--kiwi-skin);
 }
 
 /* ===========================================================

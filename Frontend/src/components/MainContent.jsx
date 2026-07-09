@@ -10,6 +10,7 @@ export default function MainContent({
   setSlides,
   onSave,
   globalBusy,
+  notify,
 }) {
   const [selectedSlideId, setSelectedSlideId] = useState(slides[0]?.slideID);
 
@@ -30,6 +31,20 @@ export default function MainContent({
   // Пока правится хотя бы один слайд, кнопка "Сохранить презентацию"
   // заблокирована для всего чата.
   const isAnySlideEditing = editingSlideIds.size > 0;
+
+  const hasUnappliedEdit = Object.values(editDrafts).some(
+    (text) => (text || "").trim().length > 0,
+  );
+
+  const handleSaveClick = () => {
+    if (hasUnappliedEdit) {
+      const confirmed = window.confirm(
+        "У вас осталась непримененная правка. Вы уверены, что хотите продолжить?",
+      );
+      if (!confirmed) return;
+    }
+    onSave();
+  };
 
   const handleVersionChange = (newVersionId) => {
     if (isCurrentSlideEditing || globalBusy) return;
@@ -71,6 +86,7 @@ export default function MainContent({
 
     const slide = slides.find((s) => s.slideID === slideId);
     const versionID = slide?.state?.selectedVersionID;
+    const baseVersion = slide?.versions.find((v) => v.versionID === versionID);
 
     setEditErrors((prev) => ({ ...prev, [slideId]: null }));
     setEditingSlideIds((prev) => new Set(prev).add(slideId));
@@ -96,6 +112,9 @@ export default function MainContent({
         finalStatus.newVersionID,
       );
 
+      const isChanged =
+        JSON.stringify(newVersion.slide) !== JSON.stringify(baseVersion?.slide);
+
       setSlides((prevSlides) =>
         prevSlides.map((s) => {
           if (s.slideID !== slideId) return s;
@@ -114,6 +133,12 @@ export default function MainContent({
         }),
       );
       setEditDrafts((prev) => ({ ...prev, [slideId]: "" }));
+      notify?.(
+        isChanged
+          ? "Правки были применены. Слайд изменен."
+          : "Слайд не был изменен.",
+        isChanged ? "success" : "info",
+      );
     } catch (err) {
       setEditErrors((prev) => ({
         ...prev,
@@ -151,8 +176,9 @@ export default function MainContent({
           versions={currentSlide.versions}
           selectedVersionId={selectedVersionId}
           onSelectVersion={handleVersionChange}
-          onSave={onSave}
-          disabled={isAnySlideEditing || globalBusy}
+          onSave={handleSaveClick}
+          versionsDisabled={isCurrentSlideEditing || globalBusy}
+          saveDisabled={isAnySlideEditing || globalBusy}
         />
       </div>
     </div>

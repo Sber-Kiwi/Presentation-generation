@@ -3,6 +3,17 @@
 import { API_BASE_URL } from "./config";
 import { ApiError } from "./errors";
 
+async function safeFetch(url, options) {
+  try {
+    return await fetch(url, options);
+  } catch (_err) {
+    throw new ApiError("Соединение с сервером потеряно.", {
+      status: 0,
+      code: "NETWORK_ERROR",
+    });
+  }
+}
+
 async function handleResponse(res, { binary = false } = {}) {
   if (res.ok) {
     if (binary) {
@@ -21,7 +32,11 @@ async function handleResponse(res, { binary = false } = {}) {
   } catch (_err) {
     // тело ответа не JSON — оставляем payload как есть
   }
-  throw new ApiError(payload?.message || `Ошибка запроса (${res.status})`, {
+  const fallback =
+    res.status >= 500
+      ? "Внутренняя ошибка системы. Повторите запрос."
+      : `Ошибка запроса (${res.status})`;
+  throw new ApiError(payload?.message || fallback, {
     status: res.status,
     code: payload?.code,
     details: payload?.details,
@@ -75,9 +90,7 @@ export const realApi = {
   },
 
   async getSlide(chatId, slideId, versionID) {
-    const url = new URL(
-      `${API_BASE_URL}/chats/${chatId}/slides/${slideId}`,
-    );
+    const url = new URL(`${API_BASE_URL}/chats/${chatId}/slides/${slideId}`);
     if (versionID) url.searchParams.set("versionID", versionID);
     const res = await fetch(url);
     return handleResponse(res);
@@ -105,9 +118,7 @@ export const realApi = {
   },
 
   async getDownloadStatus(chatId) {
-    const res = await fetch(
-      `${API_BASE_URL}/chats/${chatId}/downloads/status`,
-    );
+    const res = await fetch(`${API_BASE_URL}/chats/${chatId}/downloads/status`);
     return handleResponse(res);
   },
 
