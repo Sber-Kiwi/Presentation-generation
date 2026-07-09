@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  db:
+    container_name: kiwi-database
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: kiwidb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./Database Content/create and filling scripts/create_scripts.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: Backend/Dockerfile
+    container_name: kiwi_backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/kiwidb
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=root
+      - PYTHON_SCRIPT_PATH=/app/Backend/LangGraph/main.py
+      - SERVER_SERVLET_CONTEXT_PATH=/api
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: kiwi_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
