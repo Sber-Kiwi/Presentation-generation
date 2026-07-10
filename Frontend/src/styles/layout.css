@@ -116,6 +116,7 @@
   flex: 1;
   display: flex;
   justify-content: center;
+  align-items: center;
   padding: 20px;
   gap: 20px;
 }
@@ -146,7 +147,7 @@
    =========================================================== */
 .slide {
   width: auto;
-  height: 100%;
+  height: auto;
   border: 3px solid #333;
   border-radius: 4px;
   display: flex;
@@ -198,13 +199,21 @@
 }
 
 .slide-title {
-  width: 100%;
+  width: 558px;
   height: calc(var(--grid-size) / 3);
   padding-inline: 10px;
   border: 2px solid #333;
   border-radius: 4px;
   display: flex;
   align-items: center;
+  overflow: hidden;
+}
+
+.slide-title-text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .objects-grid {
@@ -459,6 +468,7 @@
    =========================================================== */
 .versions-and-save {
   width: 170px;
+  height: 100%;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
