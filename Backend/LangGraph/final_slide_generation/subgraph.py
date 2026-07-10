@@ -25,11 +25,15 @@ async def build_final_json(state: FinalJsonTaskState) -> dict:
     async with semaphore:
         # Phase 1: ReAct loop with sql_query_dataframe
         gathered_messages = await gather_slide_data(slide_prompt)
+        if gathered_messages is None:
+            return {"final_slides": {}}
 
         # Phase 2: single structured-output call, no tools
         final_slide_structured_data = await build_slide_json(
             slide_prompt, gathered_messages
         )
+        if final_slide_structured_data is None:
+            return {"final_slides": {}}
 
     final_slide = _build_final_json_slide(
         slide_draft, final_slide_structured_data, slide_index

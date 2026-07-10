@@ -25,43 +25,71 @@ from nodes import sql_tool_node
 from utils import resolve_grid_position
 
 MAX_DATA_GATHER_ITERATIONS = 5
+MAX_GATHER_RETRIES = 2
+MAX_BUILD_RETRIES = 2
 
 
-async def gather_slide_data(slide_prompt: str) -> Sequence[BaseMessage]:
+async def gather_slide_data(slide_prompt: str) -> Sequence[BaseMessage] | None:
     system_message = SystemMessage(content=DATA_GATHER_SYSTEM_MESSAGE)
     data_message = HumanMessage(
         content=f"ОПИСАНИЕ СЛАЙДА и ОБЪЕКТОВ: {slide_prompt}\n\n"
         f"ЗАГОЛОВКИ ТАБЛИЦЫ С ДАННЫМИ: {str(settings.sql_data.columns)}"
     )
-    messages = [system_message, data_message]
 
-    for _ in range(MAX_DATA_GATHER_ITERATIONS):
-        response = await settings.call_llm(
-            llm_with_data_tools, messages, config=config_strict
-        )
-        messages.append(response)
+    for attempt in range(MAX_GATHER_RETRIES + 1):
+        try:
+            messages = [system_message, data_message]
+            for _ in range(MAX_DATA_GATHER_ITERATIONS):
+                response = await settings.call_llm(
+                    llm_with_data_tools, messages, config=config_strict
+                )
+                messages.append(response)
+                if not getattr(response, "tool_calls", None):
+                    break
+                tool_results = await sql_tool_node.ainvoke({"messages": messages})
+                messages.extend(tool_results["messages"])
+            return messages
 
-        if not getattr(response, "tool_calls", None):
-            break
-
-        tool_results = await sql_tool_node.ainvoke({"messages": messages})
-        messages.extend(tool_results["messages"])
-
-    return messages
+        except Exception as e:
+            print(
+                f"[WARNING] Ошибка сбора данных для слайда "
+                f"(попытка {attempt + 1}/{MAX_GATHER_RETRIES + 1}): {e}"
+            )
+            if attempt == MAX_GATHER_RETRIES:
+                print(
+                    f"[SKIPPED] Сбор данных для слайда пропущен "
+                    f"после {MAX_GATHER_RETRIES + 1} неудачных попыток."
+                )
+                return None
 
 
 async def build_slide_json(
     slide_prompt: str, gathered_messages: Sequence[BaseMessage]
-) -> FinalSlideData:
+) -> FinalSlideData | None:
     system_message = SystemMessage(content=JSON_BUILD_SYSTEM_MESSAGE)
     data_message = HumanMessage(content=f"""ИСХОДНОЕ ОПИСАНИЕ СЛАЙДА: {slide_prompt}
 СОБРАННЫЕ ДАННЫЕ: {_summarize_tool_results(gathered_messages)}""")
 
-    response: FinalSlideData = await settings.call_llm(
-        llm_structured_final, [system_message, data_message], config=config_strict
-    )
+    for attempt in range(MAX_BUILD_RETRIES + 1):
+        try:
+            response: FinalSlideData = await settings.call_llm(
+                llm_structured_final,
+                [system_message, data_message],
+                config=config_strict,
+            )
+            return response
 
-    return response
+        except Exception as e:
+            print(
+                f"[WARNING] Ошибка построения JSON для слайда "
+                f"(попытка {attempt + 1}/{MAX_BUILD_RETRIES + 1}): {e}"
+            )
+            if attempt == MAX_BUILD_RETRIES:
+                print(
+                    f"[SKIPPED] Построение JSON для слайда пропущено "
+                    f"после {MAX_BUILD_RETRIES + 1} неудачных попыток."
+                )
+                return None
 
 
 def _summarize_tool_results(messages: Sequence[BaseMessage]) -> str:
