@@ -10,6 +10,7 @@ import com.kiwi.database.tasks.Tasks;
 import com.kiwi.database.tasks.TasksRepository;
 import com.kiwi.database.versions.Versions;
 import com.kiwi.database.versions.VersionsRepository;
+import com.kiwi.dto.request.SlideStateDto;
 import com.kiwi.util.IdUtil;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ public class AgentService {
     private static final Logger log = LoggerFactory.getLogger(AgentService.class);
 
     private final TasksRepository tasksRepository;
+    private final com.kiwi.database.tasks.TasksService tasksService;
     private final ChatsRepository chatsRepository;
     private final SlidesRepository slidesRepository;
     private final VersionsRepository versionsRepository;
@@ -44,12 +46,14 @@ public class AgentService {
     private final AgentProcessManager processManager;
 
     public AgentService(TasksRepository tasksRepository,
+                        com.kiwi.database.tasks.TasksService tasksService,
                         ChatsRepository chatsRepository,
                         SlidesRepository slidesRepository,
                         VersionsRepository versionsRepository,
                         JsonsRepository jsonsRepository,
                         ObjectMapper objectMapper, AgentProcessManager processManager) {
         this.tasksRepository = tasksRepository;
+        this.tasksService = tasksService;
         this.chatsRepository = chatsRepository;
         this.slidesRepository = slidesRepository;
         this.versionsRepository = versionsRepository;
@@ -87,8 +91,8 @@ public class AgentService {
             return;
         }
 
-        task.setStatus(1);
-        tasksRepository.save(task);
+        tasksService.updateTaskStatus(taskDBID, 1);
+        task.setStatus(1); // Update local state for consistency
         Chats chat = task.getChat();
 
         try {
@@ -122,13 +126,7 @@ public class AgentService {
 
                 ArrayNode historyArray = filePayload.putArray("recent_versions_history");
                 for (Versions v : recentVersions) {
-                    ObjectNode vNode = objectMapper.createObjectNode();
-                    vNode.put("versionID", IdUtil.versionId(v.getVersionID()));
-                    vNode.set("json", objectMapper.readTree(v.getJson()));
-                    if (v.getPrompt() != null) {
-                        vNode.put("prompt", v.getPrompt());
-                    }
-                    historyArray.add(vNode);
+                    historyArray.add(objectMapper.readTree(v.getJson()));
                 }
                 
                 tempInputFile = Files.createTempFile("task_" + taskDBID + "_in_", ".json");
@@ -136,16 +134,38 @@ public class AgentService {
                 
                 payload.put("input_file", tempInputFile.toAbsolutePath().toString());
                 payload.put("output_file", tempOutputFile.toAbsolutePath().toString());
+
+                log.info(filePayload.toString());
             }
             else if (task.getType() == 2) {
                 ObjectNode filePayload = objectMapper.createObjectNode();
-                filePayload.set("slides", objectMapper.readTree(task.getPrompt()));
+                JsonNode slidesRequestNode = objectMapper.readTree(task.getPrompt());
+                ArrayNode slidesJsonArray = objectMapper.createArrayNode();
+                
+                if (slidesRequestNode.isArray()) {
+                    for (JsonNode slideRequest : slidesRequestNode) {
+                        boolean inPresentation = slideRequest.has("inPresentation") && slideRequest.get("inPresentation").asBoolean();
+                        if (inPresentation && slideRequest.has("selectedVersionID")) {
+                            String versionIdStr = slideRequest.get("selectedVersionID").asText();
+                            Integer versionDbId = IdUtil.parseVersionId(versionIdStr);
+                            Versions version = versionsRepository.findById(versionDbId).orElse(null);
+                            if (version != null) {
+                                slidesJsonArray.add(objectMapper.readTree(version.getJson()));
+                            }
+                        }
+                    }
+                }
+                
+                filePayload.set("slides", slidesJsonArray);
                 
                 tempInputFile = Files.createTempFile("task_" + taskDBID + "_in_", ".json");
                 Files.writeString(tempInputFile, objectMapper.writeValueAsString(filePayload));
                 
                 payload.put("input_file", tempInputFile.toAbsolutePath().toString());
                 payload.put("output_file", tempOutputFile.toAbsolutePath().toString());
+
+                log.info(payload.toString());
+                log.info(filePayload.toString());
             }
 
             String actionStr = task.getType() == 0 ? "generate" : (task.getType() == 1 ? "edit" : "export");
@@ -154,7 +174,7 @@ public class AgentService {
                     taskDBID, 
                     actionStr, 
                     jsonRequest, 
-                    300
+                    900
             );
 
             if (tempCsvFile != null) {
@@ -166,9 +186,18 @@ public class AgentService {
 
             String resultFileContent = Files.readString(Path.of(outputFilePath));
             JsonNode resultData = objectMapper.readTree(resultFileContent);
+
             Files.deleteIfExists(Path.of(outputFilePath));
 
             if (task.getType() == 0) {
+                if (resultData.has("presentation_name") && !resultData.get("presentation_name").isNull()) {
+                    String presName = resultData.get("presentation_name").asText();
+                    if (presName != null && !presName.trim().isEmpty()) {
+                        chat.setTitle(presName);
+                        chatsRepository.save(chat);
+                    }
+                }
+                
                 JsonNode drafts = resultData.get("drafts");
                 if (drafts == null) drafts = resultData; // Fallback just in case
                 List<JsonNode> slidesJson = objectMapper.convertValue(drafts, new TypeReference<List<JsonNode>>() {});
@@ -231,6 +260,44 @@ public class AgentService {
                             slideNumber++;
                         }
                     }
+                } else if (finalSlidesNode.isObject()) {
+                    int slideNumber = 1;
+                    Iterable<java.util.Map.Entry<String, JsonNode>> properties = ((ObjectNode) finalSlidesNode).properties();
+                    java.util.List<java.util.Map.Entry<String, JsonNode>> entryList = new java.util.ArrayList<>();
+                    for (java.util.Map.Entry<String, JsonNode> entry : properties) {
+                        entryList.add(entry);
+                    }
+                    
+                    entryList.sort((e1, e2) -> {
+                        try {
+                            return Integer.compare(Integer.parseInt(e1.getKey()), Integer.parseInt(e2.getKey()));
+                        } catch (NumberFormatException ex) {
+                            return e1.getKey().compareTo(e2.getKey());
+                        }
+                    });
+                    
+                    for (java.util.Map.Entry<String, JsonNode> entry : entryList) {
+                        JsonNode slideNode = entry.getValue();
+                        if (slideNode.isObject()) {
+                            ObjectNode slideObj = (ObjectNode) slideNode;
+                            ObjectNode slideMeta = (ObjectNode) slideObj.get("meta");
+                            if (slideMeta == null) {
+                                slideMeta = objectMapper.createObjectNode();
+                                slideObj.set("meta", slideMeta);
+                            }
+                            
+                            if (!slideMeta.has("slide_id")) slideMeta.put("slide_id", "slide_" + slideNumber);
+                            if (!slideMeta.has("title")) slideMeta.put("title", "");
+                            
+                            slideMeta.put("number", slideNumber);
+                            slideMeta.put("indicator", "0");
+                            
+                            if (!slideMeta.has("notes")) slideMeta.putNull("notes");
+                            
+                            slidesArray.add(slideObj);
+                            slideNumber++;
+                        }
+                    }
                 }
                 finalJsonNode.set("slides", slidesArray);
 
@@ -240,6 +307,8 @@ public class AgentService {
 
                 chat.setJson(savedJson);
                 chatsRepository.save(chat);
+
+
             }
 
             task.setStatus(2);

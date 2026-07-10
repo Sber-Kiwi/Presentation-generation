@@ -81,6 +81,7 @@ class OverallState(TypedDict):
     output_file: str
 
     task_id: int
+    start_prompt: str
     edit_prompt: str
     current_slide: Json
     recent_versions_history: list[Json]

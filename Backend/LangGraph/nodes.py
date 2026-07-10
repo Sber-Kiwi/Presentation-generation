@@ -70,38 +70,32 @@ def _can_accept_request(action: InputAction) -> bool:
     return True
 
 
-def setupper(state: MetricsAgentState) -> MetricsAgentState:
+async def setup_generate_request(state: OverallState) -> dict:
     if settings.sql_data is None:
         raise AttributeError("sql_data not provided, unable to process data")
 
     analyze_result = analyze(settings.sql_data.to_df())
 
-    while True:
-        edit_input = interrupt({"waiting_for": "generate_request"})
+    action = interrupt({"waiting_for": "generate_request"})
+    
+    send_message(OutputAction(task_id=action["task_id"], status="ready"))
 
-        send_message(OutputAction(task_id=edit_input["task_id"], status="ready"))
-
-        body_payload = asyncio.run(_read_json_line(f"тело запроса для action=generate"))
-        try:
-            body = _validate_body(
-                body_payload,
-                InputAction(task_id=edit_input["task_id"], action="generate"),
-            )
-            send_message(OutputAction(task_id=state["task_id"], status="accepted"))
-            break
-        except Exception as e:
-            send_message(OutputError(task_id=edit_input["task_id"], error_message="Wrong input format"))
-            continue
+    body_payload = await _read_json_line(f"тело запроса для action=generate")
+    body = _validate_body(
+        body_payload,
+        InputAction(task_id=action["task_id"], action="generate"),
+    )
+    send_message(OutputAction(task_id=action["task_id"], status="accepted"))
 
     return {
         "data_anlyze_result": convert_analyze_result_to_message(analyze_result),
         "start_prompt": body["prompt"],
-        "task_id": edit_input["task_id"],
+        "task_id": action["task_id"],
         "output_file": body["output_file"],
     }
 
 
-def data_agent(state: MetricsAgentState) -> dict:
+async def data_agent(state: MetricsAgentState) -> dict:
     """Агент с доступом к данным через инструмент. Основная задача -- выделение из промпта пользователя и таблицы с данными показателей, по которым позже будет построена таблица."""
     if settings.sql_data is None:
         raise AttributeError("sql_data not provided, unable to process data")
@@ -113,27 +107,39 @@ def data_agent(state: MetricsAgentState) -> dict:
 
 ВЫБОРКА ВСПОМОГАТЕЛЬНЫХ ДАННЫХ ИЗ ТАБЛИЦЫ: {state['data_anlyze_result']}""")
 
-    response = call_llm_sync(
-        llm_with_data_tools,
-        [system_message, data_message] + state["messages"],
-        config=config_creative,
-    )
+    for attempt in range(MAX_METRIC_RETRIES + 1):
+        try:
+            response = await call_llm(
+                llm_with_data_tools,
+                [system_message, data_message] + state["messages"],
+                config=config_creative,
+            )
+            return {"messages": [response]}
+        except Exception as e:
+            print(f"[WARNING] Ошибка в data_agent (попытка {attempt + 1}/{MAX_METRIC_RETRIES + 1}): {e}")
+            if attempt == MAX_METRIC_RETRIES + 1:
+                raise e
+            await asyncio.sleep(2**attempt)
 
-    return {"messages": [response]}
 
-
-def metrics_splitter(state: MetricsAgentState) -> dict:
+async def metrics_splitter(state: MetricsAgentState) -> dict:
     system_message = SystemMessage(content=SPLIT_INTO_LIST_MESSAGE)
-    data_message = HumanMessage(content=f"{state["messages"][-1]}")
+    data_message = HumanMessage(content=f"{state['messages'][-1]}")
 
-    response: PresentationNameAndMetricsList = call_llm_sync(
-        llm_structured_metrics, [system_message, data_message], config=config_strict
-    )
-
-    return {
-        "metrics": response.metrics,
-        "presentation_name": response.presentation_name,
-    }
+    for attempt in range(MAX_METRIC_RETRIES + 1):
+        try:
+            response: PresentationNameAndMetricsList = await call_llm(
+                llm_structured_metrics, [system_message, data_message], config=config_strict
+            )
+            return {
+                "metrics": response.metrics,
+                "presentation_name": response.presentation_name,
+            }
+        except Exception as e:
+            print(f"[WARNING] Ошибка в metrics_splitter (попытка {attempt + 1}/{MAX_METRIC_RETRIES + 1}): {e}")
+            if attempt == MAX_METRIC_RETRIES:
+                raise e
+            await asyncio.sleep(2**attempt)
 
 
 def prompt_prepare_tasks(state: PromptAgentState) -> dict:
@@ -301,11 +307,11 @@ async def review_and_edit(state: OverallState) -> dict:
         data=EditFileOut(
             edited_slide=create_draft_json(result_holder["current_slide"])
         ),
-        file=state["output_file"],
+        file=body["output_file"],
     )
 
     send_message(
-        EditResponse(task_id=state["task_id"], output_file=state["output_file"])
+        EditResponse(task_id=state["task_id"], output_file=body["output_file"])
     )
     return {"edit_route": "edit"}
 

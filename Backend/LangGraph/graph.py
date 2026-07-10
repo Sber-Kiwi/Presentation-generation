@@ -21,7 +21,7 @@ from nodes import (
     review_and_edit,
     route_after_edit,
     route_by_mode,
-    setupper,
+    setup_generate_request,
     should_continue_metrics,
     sql_tool_node,
 )
@@ -38,13 +38,11 @@ checkpointer = MemorySaver()
 
 def build_metrics_graph() -> CompiledStateGraph:
     subgraph = StateGraph(MetricsAgentState)
-    subgraph.add_node("setup_and_await", setupper)
     subgraph.add_node("data_agent", data_agent)
     subgraph.add_node("extract_metrics", metrics_splitter)
     subgraph.add_node("metrics_tools", sql_tool_node)
 
-    subgraph.add_edge(START, "setup_and_await")
-    subgraph.add_edge("setup_and_await", "data_agent")
+    subgraph.add_edge(START, "data_agent")
     subgraph.add_edge("metrics_tools", "data_agent")
     subgraph.add_conditional_edges(
         "data_agent",
@@ -91,6 +89,7 @@ def build_draft_subgraph() -> CompiledStateGraph:
 
 def build_graph() -> CompiledStateGraph:
     graph = StateGraph(OverallState)
+    graph.add_node("setup_agent", setup_generate_request)
     graph.add_node("metrics_agent", run_metrics_agent)
     graph.add_node("prompt_agent", run_prompt_agent)
     graph.add_node("draft_agent", run_draft_agent)
@@ -101,11 +100,12 @@ def build_graph() -> CompiledStateGraph:
         START,
         route_by_mode,
         {
-            "generate": "metrics_agent",
+            "generate": "setup_agent",
             "edit": "edit_agent",
         },
     )
 
+    graph.add_edge("setup_agent", "metrics_agent")
     graph.add_edge("metrics_agent", "prompt_agent")
     graph.add_edge("prompt_agent", "draft_agent")
     graph.add_edge("draft_agent", "edit_agent")
@@ -128,21 +128,18 @@ final_json_subgraph = build_final_json_subgraph()
 @dev_cache("metrics")
 async def run_metrics_agent(state: OverallState) -> dict:
     sub_input: MetricsAgentState = {
-        "start_prompt": "",
+        "start_prompt": state["start_prompt"],
         "messages": [],
         "presentation_name": "",
         "metrics": [],
-        "data_anlyze_result": "",
-        "task_id": -1,
-        "output_file": "",
+        "data_anlyze_result": state["data_anlyze_result"],
+        "task_id": state["task_id"],
+        "output_file": state["output_file"],
     }
-    result = await asyncio.to_thread(metrics_subgraph.invoke, sub_input)
+    result = await metrics_subgraph.ainvoke(sub_input)
     return {
         "presentation_name": result["presentation_name"],
         "metrics": result["metrics"],
-        "data_anlyze_result": result["data_anlyze_result"],
-        "task_id": result["task_id"],
-        "output_file": result["output_file"],
     }
 
 
@@ -172,7 +169,7 @@ async def run_draft_agent(state: OverallState) -> dict:
     write_result(
         GenerateFileOut(
             presentation_name=state["presentation_name"],
-            drafts=result["draft_slides"],
+            drafts=[result["draft_slides"][idx] for idx in sorted(result["draft_slides"].keys())],
         ),
         file=state["output_file"],
     )

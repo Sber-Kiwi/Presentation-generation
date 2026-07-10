@@ -62,7 +62,7 @@ public class AgentSession {
         try {
             while (isRunning) {
                 String line = reader.readLine();
-                log.debug(line);
+                log.info(line);
                 if (line == null) break;
 
                 if ("agent started".equals(line.trim())) {
@@ -132,6 +132,8 @@ public class AgentSession {
             }
         } catch (IOException e) {
             if (isRunning) log.error("Error reading from Python process", e);
+        } finally {
+            failAllPendingFutures("Python process died or stream closed unexpectedly");
         }
     }
     
@@ -198,13 +200,28 @@ public class AgentSession {
         log.debug("Sent FULL payload for task {}", taskId);
 
         try {
-            String result = resultFuture.get(timeoutSeconds, TimeUnit.SECONDS);
+            String result = resultFuture.get();
             this.lastActiveTime = System.currentTimeMillis();
             return result;
-        } catch (TimeoutException e) {
+        } catch (Exception e) {
             pendingResults.remove(taskId);
-            log.error("Task {} timed out", taskId);
-            throw new RuntimeException("Agent task timed out");
+            log.error("Task {} failed: {}", taskId, e.getMessage());
+            throw new RuntimeException("Agent task failed: " + e.getMessage());
+        }
+    }
+
+    private void failAllPendingFutures(String message) {
+        RuntimeException ex = new RuntimeException(message);
+        for (CompletableFuture<Boolean> f : handshakes.values()) {
+            f.completeExceptionally(ex);
+        }
+        handshakes.clear();
+        for (CompletableFuture<String> f : pendingResults.values()) {
+            f.completeExceptionally(ex);
+        }
+        pendingResults.clear();
+        synchronized (slotMonitor) {
+            slotMonitor.notifyAll();
         }
     }
 

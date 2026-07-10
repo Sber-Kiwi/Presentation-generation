@@ -175,15 +175,12 @@ class WaterfallData(BaseModel):
 
 
 # Discriminated union for the "data" field on each object
-FinalObjectData = Annotated[
-    Union[TextData, TableData, ChartData, WaterfallData],
-    Field(discriminator="kind"),
-]
+FinalObjectData = Union[TextData, TableData, ChartData, WaterfallData]
 
 
 class FinalSlideData(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    objects: dict[int, FinalObjectData] = Field(
+    objects: list[FinalObjectData] = Field(
         description="Список всех объектов -- текста, графиков, таблиц -- на слайде с соотвествующими идентификаторами.",
     )

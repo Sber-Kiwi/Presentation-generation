@@ -11,4 +11,13 @@ public class TasksService {
         this.tasksRepository = tasksRepository;
     }
 
+    @org.springframework.transaction.annotation.Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public void updateTaskStatus(Integer taskId, int status) {
+        Tasks task = tasksRepository.findById(taskId).orElse(null);
+        if (task != null) {
+            task.setStatus(status);
+            tasksRepository.save(task);
+        }
+    }
+
 }

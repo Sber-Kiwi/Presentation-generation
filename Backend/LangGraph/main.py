@@ -41,8 +41,11 @@ async def main() -> None:
             "Please provide a path to the CSV file using the -f or --file argument."
         )
 
+    from csv_preprocessor import load_csv
     settings.con = duckdb.connect()
-    settings.sql_data = settings.con.read_csv(args.file)
+    df = load_csv(args.file)
+    settings.con.register("sql_data", df)
+    settings.sql_data = settings.con.table("sql_data")
 
     result = await agent.ainvoke({"mode": args.mode}, config=config)
 

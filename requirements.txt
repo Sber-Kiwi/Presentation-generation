@@ -6,7 +6,7 @@ typing
 pandas
 
 # langchain_openai
-# langchain-mistralai
+langchain-mistralai
 langchain-groq
 
 duckdb

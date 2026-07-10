@@ -13,13 +13,13 @@ llm_with_edit_tools = thinking_llm.bind_tools(slide_tools)
 config_strict = {
     "configurable": {
         "temperature": 0.0,
-        "max_tokens": 3000,
+        "max_tokens": 4500,
     }
 }
 config_creative = {
     "configurable": {
         "temperature": 0.5,
-        "max_tokens": 3000,
+        "max_tokens": 4500,
     }
 }
 

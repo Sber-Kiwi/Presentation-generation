@@ -11,7 +11,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./Database Content/create and filling scripts/create_scripts.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./kiwidb_dump.sql:/docker-entrypoint-initdb.d/init.sql
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 

@@ -1,7 +1,7 @@
 // Пока настоящего бэкенда нет, используем заглушку (mock).
 // Когда бэкенд будет готов — переключите этот флаг в false
 // и укажите правильный API_BASE_URL.
-export const USE_MOCK_API = true;
+export const USE_MOCK_API = false;
 
 // Адрес настоящего бэкенда (используется только если USE_MOCK_API === false).
 export const API_BASE_URL = "/api";
