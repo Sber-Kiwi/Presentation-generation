@@ -413,7 +413,7 @@ export default function SlideDraft({ draft, disabled, onObjectsChange }) {
       aria-busy={disabled || undefined}
     >
       <div id="slide-title" className="slide-title">
-        {title}
+        <span className="slide-title-text">{title}</span>
       </div>
       <div id="objects-grid" className="objects-grid" ref={gridRef}>
         {Array.from({ length: 12 }, (_, i) => ({
