@@ -97,7 +97,7 @@ def _build_final_json_slide(
         "objects": [
             _build_final_json_object(object_draft, object_data)
             for object_draft, object_data in zip(
-                draft_slides.objects, slides_data.objects.values()
+                draft_slides.objects, slides_data.objects
             )
         ],
     }
