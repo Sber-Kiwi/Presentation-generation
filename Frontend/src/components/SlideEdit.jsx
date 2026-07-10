@@ -5,8 +5,11 @@ export default function SlideEdit({
   disabled,
   error,
 }) {
-  // Нельзя нажать кнопку отправки, если поле пустое или правка уже выполняется.
-  const canSend = !disabled && value.trim().length > 0;
+  const MAX_CHARS = 500;
+  const currentChars = value?.length || 0;
+  const isOverLimit = currentChars > MAX_CHARS;
+  // Нельзя нажать кнопку отправки, если поле пустое, правка уже выполняется, или превышен лимит
+  const canSend = !disabled && value.trim().length > 0 && !isOverLimit;
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -41,6 +44,16 @@ export default function SlideEdit({
             cursor: canSend ? "pointer" : "not-allowed",
           }}
         />
+      </div>
+      <div style={{
+        display: "flex",
+        justifyContent: "flex-end",
+        paddingRight: "50px",
+        fontSize: "12px",
+        color: isOverLimit ? "#ff4d4f" : currentChars > MAX_CHARS * 0.9 ? "#faad14" : "#888",
+        marginTop: "4px"
+      }}>
+        {currentChars} / {MAX_CHARS}
       </div>
       <div className="edit-status">
         {disabled ? (

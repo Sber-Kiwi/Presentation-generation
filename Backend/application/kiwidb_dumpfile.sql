@@ -10,7 +10,7 @@
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
--- SET transaction_timeout = 0;
+SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -40,7 +40,7 @@ CREATE TABLE public.chats (
 );
 
 
-ALTER TABLE public.chats OWNER TO "user";
+ALTER TABLE public.chats OWNER TO postgres;
 
 --
 -- Name: chats_chatid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -55,7 +55,7 @@ CREATE SEQUENCE public.chats_chatid_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.chats_chatid_seq OWNER TO "user";
+ALTER SEQUENCE public.chats_chatid_seq OWNER TO postgres;
 
 --
 -- Name: chats_chatid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -74,7 +74,7 @@ CREATE TABLE public.csvs (
 );
 
 
-ALTER TABLE public.csvs OWNER TO "user";
+ALTER TABLE public.csvs OWNER TO postgres;
 
 --
 -- Name: csvs_csvid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -89,7 +89,7 @@ CREATE SEQUENCE public.csvs_csvid_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.csvs_csvid_seq OWNER TO "user";
+ALTER SEQUENCE public.csvs_csvid_seq OWNER TO postgres;
 
 --
 -- Name: csvs_csvid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -108,7 +108,7 @@ CREATE TABLE public.jsons (
 );
 
 
-ALTER TABLE public.jsons OWNER TO "user";
+ALTER TABLE public.jsons OWNER TO postgres;
 
 --
 -- Name: jsons_jsonid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -123,7 +123,7 @@ CREATE SEQUENCE public.jsons_jsonid_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.jsons_jsonid_seq OWNER TO "user";
+ALTER SEQUENCE public.jsons_jsonid_seq OWNER TO postgres;
 
 --
 -- Name: jsons_jsonid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -144,7 +144,7 @@ CREATE TABLE public.slides (
 );
 
 
-ALTER TABLE public.slides OWNER TO "user";
+ALTER TABLE public.slides OWNER TO postgres;
 
 --
 -- Name: slides_slideid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -159,7 +159,7 @@ CREATE SEQUENCE public.slides_slideid_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.slides_slideid_seq OWNER TO "user";
+ALTER SEQUENCE public.slides_slideid_seq OWNER TO postgres;
 
 --
 -- Name: slides_slideid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -185,7 +185,7 @@ CREATE TABLE public.tasks (
 );
 
 
-ALTER TABLE public.tasks OWNER TO "user";
+ALTER TABLE public.tasks OWNER TO postgres;
 
 --
 -- Name: tasks_taskid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -200,7 +200,7 @@ CREATE SEQUENCE public.tasks_taskid_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.tasks_taskid_seq OWNER TO "user";
+ALTER SEQUENCE public.tasks_taskid_seq OWNER TO postgres;
 
 --
 -- Name: tasks_taskid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -220,7 +220,7 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO "user";
+ALTER TABLE public.users OWNER TO postgres;
 
 --
 -- Name: users_userid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -235,7 +235,7 @@ CREATE SEQUENCE public.users_userid_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.users_userid_seq OWNER TO "user";
+ALTER SEQUENCE public.users_userid_seq OWNER TO postgres;
 
 --
 -- Name: users_userid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
@@ -259,7 +259,7 @@ CREATE TABLE public.versions (
 );
 
 
-ALTER TABLE public.versions OWNER TO "user";
+ALTER TABLE public.versions OWNER TO postgres;
 
 --
 -- Name: versions_versionid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -274,7 +274,7 @@ CREATE SEQUENCE public.versions_versionid_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.versions_versionid_seq OWNER TO "user";
+ALTER SEQUENCE public.versions_versionid_seq OWNER TO postgres;
 
 --
 -- Name: versions_versionid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres

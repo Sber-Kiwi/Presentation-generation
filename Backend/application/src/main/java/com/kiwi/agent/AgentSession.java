@@ -31,14 +31,16 @@ public class AgentSession {
     private final ConcurrentHashMap<Integer, CompletableFuture<String>> pendingResults = new ConcurrentHashMap<>();
     private final Object slotMonitor = new Object();
     private volatile boolean isRunning = true;
+    private final CountDownLatch agentStartedLatch = new CountDownLatch(1);
+    private final long startTime;
 
     private final String mode;
 
     public AgentSession(String scriptPath, Path csvFilePath, String mode) throws IOException {
         this.csvFilePath = csvFilePath;
         this.mode = mode;
-        
-        ProcessBuilder pb = new ProcessBuilder("python3", scriptPath, "--csv_path", csvFilePath.toAbsolutePath().toString(), "--mode", mode);
+        this.startTime = System.currentTimeMillis();
+        ProcessBuilder pb = new ProcessBuilder("python3", "-u", scriptPath, "--file", csvFilePath.toAbsolutePath().toString(), "--mode", mode);
         pb.redirectErrorStream(false); 
         
         this.process = pb.start();
@@ -60,7 +62,15 @@ public class AgentSession {
         try {
             while (isRunning) {
                 String line = reader.readLine();
+                log.debug(line);
                 if (line == null) break;
+
+                if ("agent started".equals(line.trim())) {
+                    long buildTime = System.currentTimeMillis() - startTime;
+                    log.info("Agent started successfully. Graph built in {} ms.", buildTime);
+                    agentStartedLatch.countDown();
+                    continue;
+                }
                 
                 log.debug("Python stdout: {}", line);
                 try {
@@ -140,11 +150,16 @@ public class AgentSession {
     public String executeWithHandshake(Integer taskId, String action, String fullJsonPayload, long timeoutSeconds) throws Exception {
         this.lastActiveTime = System.currentTimeMillis();
 
+        if (!agentStartedLatch.await(120, TimeUnit.SECONDS)) {
+            throw new RuntimeException("Python agent failed to start in time (no 'agent started' message received)");
+        }
+
         while (isRunning) {
             CompletableFuture<Boolean> handshakeFuture = new CompletableFuture<>();
             handshakes.put(taskId, handshakeFuture);
             
-            String pingJson = "{\"action\": \"" + action + "\", \"task_id\": " + taskId + "}";
+            String pingJson = "{\"task_id\": " + taskId + ", \"action\": \"" + action + "\"}";
+            log.info("Python handshake request: {}", pingJson);
             
             synchronized (writer) {
                 writer.write(pingJson + "\n");
@@ -154,7 +169,7 @@ public class AgentSession {
 
             boolean accepted = false;
             try {
-                accepted = handshakeFuture.get(10, TimeUnit.SECONDS);
+                accepted = handshakeFuture.get(60, TimeUnit.SECONDS);
             } catch (TimeoutException e) {
                 log.warn("Ping timeout for task {}", taskId);
             } finally {

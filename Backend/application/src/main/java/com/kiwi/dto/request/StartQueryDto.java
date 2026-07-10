@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class StartQueryDto {
 
     @NotBlank(message = "prompt is required")
+    @jakarta.validation.constraints.Size(max = 500, message = "Текст запроса не должен превышать 500 символов")
     private String prompt;
 
     @NotNull(message = "table is required")

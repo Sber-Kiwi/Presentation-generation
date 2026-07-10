@@ -5,8 +5,9 @@ dotenv
 typing
 pandas
 
-langchain_openai
-langchain-mistralai
+# langchain_openai
+# langchain-mistralai
+langchain-groq
 
 duckdb
 

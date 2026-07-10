@@ -1,5 +1,3 @@
-CREATE DATABASE kiwidb;
-
 CREATE TABLE users (
     userID      SERIAL NOT NULL PRIMARY KEY,
     department  VARCHAR(40) NOT NULL,
@@ -66,3 +64,5 @@ CREATE TABLE tasks (
     CONSTRAINT chk_task_status CHECK (status BETWEEN 0 AND 3),
     CONSTRAINT chk_task_prompt CHECK (char_length(trim(prompt)) > 0)
 );
+
+INSERT INTO users(department) VALUES('IT');

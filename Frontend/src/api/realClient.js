@@ -36,9 +36,14 @@ async function handleResponse(res, { binary = false } = {}) {
     res.status >= 500
       ? "Внутренняя ошибка системы. Повторите запрос."
       : `Ошибка запроса (${res.status})`;
-  throw new ApiError(payload?.message || fallback, {
+  let errorMessage = payload?.message || fallback;
+  if (payload?.status === "VALIDATION_ERROR" && Array.isArray(payload?.details) && payload.details.length > 0) {
+    errorMessage = payload.details.map((d) => d.message).join(", ");
+  }
+
+  throw new ApiError(errorMessage, {
     status: res.status,
-    code: payload?.code,
+    code: payload?.status || payload?.code,
     details: payload?.details,
   });
 }
@@ -90,7 +95,7 @@ export const realApi = {
   },
 
   async getSlide(chatId, slideId, versionID) {
-    const url = new URL(`${API_BASE_URL}/chats/${chatId}/slides/${slideId}`);
+    const url = new URL(`${API_BASE_URL}/chats/${chatId}/slides/${slideId}`, window.location.origin);
     if (versionID) url.searchParams.set("versionID", versionID);
     const res = await fetch(url);
     return handleResponse(res);
@@ -112,7 +117,7 @@ export const realApi = {
     const res = await fetch(`${API_BASE_URL}/chats/${chatId}/downloads`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(slideStates),
+      body: JSON.stringify({ slides: slideStates }),
     });
     return handleResponse(res);
   },

@@ -503,6 +503,9 @@ export default function SlideDraft({ draft, disabled, onObjectsChange }) {
                 {object.data_description && (
                   <p className="grid-item-text">{object.data_description}</p>
                 )}
+                {object.text && (
+                  <p className="grid-item-text">{object.text}</p>
+                )}
               </div>
 
               {!isLocked &&

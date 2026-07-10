@@ -4,7 +4,7 @@
 export const USE_MOCK_API = false;
 
 // Адрес настоящего бэкенда (используется только если USE_MOCK_API === false).
-export const API_BASE_URL = "http://localhost:8000";
+export const API_BASE_URL = "/api";
 
 // Как часто опрашивать сервер при ожидании завершения задачи (генерация,
 // правка слайда, экспорт).

@@ -97,7 +97,6 @@ public class AgentService {
 
             ObjectNode payload = objectMapper.createObjectNode();
             payload.put("task_id", taskDBID);
-            payload.put("chat_id", chat.getChatID());
 
             Path tempInputFile = null;
             Path tempOutputFile = Files.createTempFile("task_" + taskDBID + "_out_", ".json");

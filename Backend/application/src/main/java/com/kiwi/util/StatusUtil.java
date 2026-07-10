@@ -7,7 +7,7 @@ public class StatusUtil {
             case 0 -> "pending";
             case 1 -> "processing";
             case 2 -> "done";
-            case 3 -> "error";
+            case 3 -> "failed";
             default -> "unknown";
         };
     }
